@@ -61,7 +61,9 @@ Logo: <skip>
 
 ![foundry apps create](images/foundry-apps-create.png)
 
-Your new app directory contains only a single file, `manifest.yml`. This file is your app's deployment descriptor. As you add capabilities to your app, subdirectories will be created and the manifest file gets updated.
+Your new app directory contains only a single file, `manifest.yml`. This file is your app's deployment descriptor. As you add capabilities to your app, subdirectories will be created and the manifest file gets updated. 
+
+Q: Should we mention the app ID and how it'll be overwritten when you do a new deployment? For example, if you clone an app from GitHub and deploy it, it should work even if the IDs are in the manifest. 
 
 ### Add a UI Extension
 
@@ -191,7 +193,10 @@ I was also successful in deploying a React app as an extension. Heck, I even got
 
 ![Angular app in Foundry](images/angular-with-username.png)
 
-_Later, I tried adding navigation and sub-pages to my Angular app. When Foundry modifies the HTML, it seems to cause the Angular app to use push-based routing instead of the configured hash-based routing. I'm not sure why this is, but deleting the `<base>` tag in the HTML makes it work again._
+<details>
+<summary>Click here to view the Angular issues I experienced.</summary>
+<blockquote>Later, I tried adding navigation and sub-pages to my Angular app. When Foundry modifies the HTML, it seems to cause the Angular app to use push-based routing instead of the configured hash-based routing. I'm not sure why this is, but deleting the <code>&lt;base></code> tag from the HTML (via Chrome Developer Tools) makes it work again.</blockquote>
+</details>
 
 ## Learn More about Falcon Foundry
 
