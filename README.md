@@ -6,15 +6,12 @@ This code is the result of doing the Falcon Foundry Quickstart. To see how it wa
 
 ## Prerequisites
 
-* The Foundry CLI (instructions below).
+- A Falcon subscription
+- The Foundry CLI (instructions below)
 
 ### Install the Foundry CLI
 
-You can install the Foundry CLI with Scoop on Windows or Homebrew on Linux/macOS.
-
-**Windows**:
-
-Download the [latest Windows zip file](https://assets.foundry.crowdstrike.com/cli/latest/foundry_Windows_x86_64.zip), expand it, and add the installation directory to your PATH environment variable.
+You can install the Foundry CLI with Homebrew on Linux/macOS.
 
 **Linux and macOS**:
 
@@ -24,6 +21,10 @@ Install [Homebrew](https://docs.brew.sh/Installation). Then, add the Foundry CLI
 brew tap crowdstrike/foundry-cli
 brew install foundry
 ```
+
+**Windows**:
+
+Download the [latest Windows zip file](https://assets.foundry.crowdstrike.com/cli/latest/foundry_Windows_x86_64.zip), expand it, and add the installation directory to your PATH environment variable.
 
 Verify it's installed correctly:
 
