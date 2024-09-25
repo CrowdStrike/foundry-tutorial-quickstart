@@ -12,7 +12,9 @@ In this tutorial, I'll show you how to build your first Foundry app. It will be 
 
 **Prerequisites:**
 
+- A Falcon subscription
 - The Foundry CLI
+- An internet connection
 
 You can install the Foundry CLI with Homebrew on Linux/macOS.
 
