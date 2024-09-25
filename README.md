@@ -14,14 +14,7 @@ You can install the Foundry CLI with Scoop on Windows or Homebrew on Linux/macOS
 
 **Windows**:
 
-Install [Scoop](https://scoop.sh/). Then, add the Foundry CLI bucket and install the Foundry CLI.
-
-```shell
-scoop bucket add foundry https://github.com/crowdstrike/scoop-foundry-cli.git
-scoop install foundry
-```
-
-Or, you can download the [latest Windows zip file](https://assets.foundry.crowdstrike.com/cli/latest/foundry_Windows_x86_64.zip), expand it, and add the installation directory to your PATH environment variable.
+Download the [latest Windows zip file](https://assets.foundry.crowdstrike.com/cli/latest/foundry_Windows_x86_64.zip), expand it, and add the installation directory to your PATH environment variable.
 
 **Linux and macOS**:
 
