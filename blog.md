@@ -4,7 +4,7 @@ Are you a technology professional who's experienced problems integrating securit
 
 CrowdStrike is on the front lines of the fight against cybercriminals. We call them _adversaries_. You can learn about the names we've given them and where they live via our [Adversary Universe](https://www.crowdstrike.com/adversaries/). We even have an [Adversary Universe podcast](https://www.crowdstrike.com/resources/adversary-universe-podcast/).
 
-Our Falcon platform has analytic and response features to defend and hunt against adversaries. One of those features is called Foundry. Falcon Foundry gives you the ability to build apps, extensions, and API integrations to take advantage of all the data for your organization by CrowdStrike. Through our Next-Gen <abbr title="Security Information and Event Management">SIEM</abbr>, you can even add additional data from third party sources. 
+Our Falcon platform has analytic and response features to defend and hunt against adversaries. One of those features is called Foundry. Falcon Foundry gives you the ability to build apps, extensions, and API integrations to take advantage of all the data for your organization by CrowdStrike. Through our Next-Gen <abbr title="Security Information and Event Management">SIEM</abbr>, you can even add additional data from third-party sources. 
 
 In this tutorial, I'll show you how to build your first Foundry app. It will be relatively simple, but you'll learn quite a few concepts, from using the Foundry CLI, to running in development mode, to installing the app for your users.
 
@@ -12,7 +12,7 @@ In this tutorial, I'll show you how to build your first Foundry app. It will be 
 
 **Prerequisites:**
 
-- A Falcon subscription
+- Falcon Insight XDR or Falcon Prevent
 - The Foundry CLI
 - An internet connection
 
@@ -35,14 +35,14 @@ foundry version
 
 [Falcon Foundry](https://www.crowdstrike.com/platform/next-gen-siem/falcon-foundry/) is "Cybersecurity's first low-code application platform." This is marketing-speak saying that you don't have to write a whole lot of code to build apps. We're working on adding no-code support to Foundry too, which means you'll eventually be able to build everything in a <abbr title="What You See Is What You Get">WYSIWYG</abbr> environment. 
 
-> Hi! 👋 My name is Matt Raible, and I'm a pro-code fan. By this, I mean I _like_ to write code and have full control over my app's functionality. I'm sceptical of low-code and no-code solutions. I'm new here at CrowdStrike, and I'm helping make our solutions easy to use, so my opinion might change as time goes on. 
+> Hi! 👋 My name is Matt Raible, and I'm a pro-code fan. By this, I mean I _like_ to write code and have full control over my app's functionality. I'm skeptical of low-code and no-code solutions. I'm new here at CrowdStrike, and I'm helping make our solutions easy to use, so my opinion might change as time goes on. 
 
-There are a few modes you'll see why doing this tutorial:
+There are a few modes you'll see while doing this tutorial:
 
 - Development: Run an app on your local machine. View it in your browser or from the Falcon UI.
 - Preview: Allows you to view a deployed app in the Falcon UI before releasing it.
 - Release: Publish a deployed app into the App catalog.
-- Install: Install a released app via the App manager. 
+- Install: Install a released app via the App catalog. 
 
 You'll also need a CID, or Customer ID, to work with. If you'd rather not develop in your production instance, you can create a developer CID. See the Foundry documentation for more information about this. 
 
@@ -81,7 +81,7 @@ Your new app directory contains only a single file, `manifest.yml`. This file is
 
 ### Add a UI Extension
 
-A UI extension is an app that will be rendered only in certain areas of Falcon. Create one with the commands below:
+A UI extension is an app that will be rendered only in certain areas of existing Falcon pages. Create one with the commands below:
 
 ```shell
 cd foundry-quickstart
@@ -99,7 +99,7 @@ The screenshot below shows how this might look in your terminal:
 
 ![foundry ui extensions create](images/foundry-ui-extensions-create.png)
 
-You might be asking, what is a Socket? Sockets are predefined locations within the Falcon console where your extension can be rendered. Selecting **Endpoint detection details** means that your app will be rendered on the `/activity-v2/detections` page in the Falcon console, as well as `/unified-detections` in Next-Gen SIEM. When a Falcon console user selects an endpoint's detection to see its details, your app will be displayed in this panel.
+You might be asking, what is a Socket? Sockets are predefined locations within the Falcon console where your extension can be rendered. Selecting **Endpoint detection details** means that your app will be rendered on the `/activity-v2/detections` page in the Falcon console, as well as `/unified-detections` in Next-Gen SIEM. When a Falcon console user selects an endpoint's detection to see its details, your app will be displayed in this panel alongside the existing detection details CrowdStrike already provides.
 
 You can use the `tree` command to see the directory structure and files in the project. 
 
@@ -183,9 +183,7 @@ Choose **Major** for the change type, select the version you deployed, and fill 
 > [!TIP]
 > You can also do a release in the Foundry UI by going to **Foundry** > **App manager** and using **Release app** from the Actions menu. 
 
-This process will make the app available for users in your CID. However, it will not install it. 
-
-> **Q: Should we mention that folks need a Falcon Insight XDR or Falcon Prevent subscription to do this tutorial?**
+This process will make the app available for users in your CID to view in the App catalog. However, it will not install it.
 
 ## Install the App for Users
 
@@ -193,7 +191,7 @@ Go to **Foundry** > **App catalog**. Find your app, select the action menu in th
 
 After the success messages disappear, view your app by going to **Endpoint security** > **Monitor** > **Endpoint detections** again. 
 
-In case you're wondering how versions work, minor and patch releases are updated and installed automatically. Released marked major must be accepted manually in the App catalog. 
+In case you're wondering how versions work, minor and patch releases are updated and installed automatically. Release versions marked major must be accepted manually in the App catalog. 
 
 ## My Experience with Foundry
 
