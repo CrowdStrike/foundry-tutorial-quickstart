@@ -1,10 +1,10 @@
 # Get Started with Falcon Foundry
 
-Cybersecurity is the name of the industry that fights against cybercriminals. There are many ways that cybersecurity professionals help businesses stay secure, and it often starts with educating individuals so they are more aware of how cybercriminals work. Some basics include not clicking on links in suspicious emails or SMS messages. You shouldn't even bother responding to messages that look suspicious, especially via text. 
+Are you a security professional who's experienced problems integrating all the data streams from your systems? If you're using distributed systems and trying to do analysis between them during an incident, it can be painful. Alert fatigue is real. What if you could enhance the details of your security detections to include data from third parties or your custom apps? You can do that now on our platform. 
 
 CrowdStrike is on the front lines of the fight against cybercriminals. We call them _adversaries_. You can learn about the names we've given them and where they live via our [Adversary Universe](https://www.crowdstrike.com/adversaries/). We even have an [Adversary Universe podcast](https://www.crowdstrike.com/resources/adversary-universe-podcast/).
 
-Our Falcon platform has a lot of features to defend against adversaries. One of those features is called Foundry. Falcon Foundry gives you the ability to build apps, extensions, and API integrations to take advantage of all the data for your organization by CrowdStrike. Through our Next-Gen <abbr title="Security Information and Event Management">SIEM</abbr>, you can even add additional data from third party sources. 
+Our Falcon platform has analytic and response features to defend and hunt against adversaries. One of those features is called Foundry. Falcon Foundry gives you the ability to build apps, extensions, and API integrations to take advantage of all the data for your organization by CrowdStrike. Through our Next-Gen <abbr title="Security Information and Event Management">SIEM</abbr>, you can even add additional data from third party sources. 
 
 In this tutorial, I'll show you how to build your first Foundry app. It will be relatively simple, but you'll learn quite a few concepts, from using the Foundry CLI, to running in development mode, to installing the app for your users.
 
