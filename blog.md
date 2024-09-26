@@ -1,6 +1,6 @@
 # Get Started with Falcon Foundry
 
-Are you a security professional who's experienced problems integrating all the data streams from your systems? If you're using distributed systems and trying to do analysis between them during an incident, it can be painful. Alert fatigue is real. What if you could enhance the details of your security detections to include data from third parties or your custom apps? You can do that now on our platform. 
+Are you a technology professional who's experienced problems integrating security-related data streams from your systems? If you're using distributed systems and trying to analyze them during an incident, it can be painful. Alert fatigue is real. What if you could enhance the details of your threat detections to include data and response actions from third parties or your own custom apps? You can do that now on our platform.
 
 CrowdStrike is on the front lines of the fight against cybercriminals. We call them _adversaries_. You can learn about the names we've given them and where they live via our [Adversary Universe](https://www.crowdstrike.com/adversaries/). We even have an [Adversary Universe podcast](https://www.crowdstrike.com/resources/adversary-universe-podcast/).
 
