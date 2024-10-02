@@ -6,7 +6,7 @@ This code is the result of doing the Falcon Foundry Quickstart. To see how it wa
 
 ## Prerequisites
 
-- A Falcon subscription
+- Falcon Insight XDR or Falcon Prevent
 - The Foundry CLI (instructions below)
 
 ### Install the Foundry CLI
