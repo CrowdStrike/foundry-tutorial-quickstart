@@ -1,3 +1,7 @@
+![CrowdStrike FalconPy](https://raw.githubusercontent.com/CrowdStrike/foundry-quickstart/images/cs-logo.png)
+
+[![CrowdStrike Subreddit](https://img.shields.io/badge/-r%2Fcrowdstrike-white?logo=reddit&labelColor=gray&link=https%3A%2F%2Freddit.com%2Fr%2Fcrowdstrike)](https://reddit.com/r/crowdstrike)<br/>
+
 # Foundry Quickstart
 
 > A basic "Hello World" app with Foundry.
@@ -84,7 +88,11 @@ This example uses the following CrowdStrike products:
 
 ## Help
 
-Please post any questions as issues in this repo or ask for help in our [CrowdStrike subreddit](https://www.reddit.com/r/crowdstrike/).
+Please post any questions as issues in this repo, ask for help in our [CrowdStrike subreddit](https://www.reddit.com/r/crowdstrike/), or post your question to our [Foundry Developer Community](https://community.crowdstrike.com/groups/foundry-developer-community-82).
+
+## Support
+
+The foundry-quickstart repo is the resulting code from doing the Foundry Quickstart tutorial. While not a formal CrowdStrike product, foundry-quickstart is maintained by CrowdStrike and supported in partnership with the open source developer community.
 
 ## License
 
