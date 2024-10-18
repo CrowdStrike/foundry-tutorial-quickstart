@@ -14,7 +14,7 @@ Please report suspected security vulnerabilities by:
 + Submitting a [bug](https://github.com/CrowdStrike/foundy-quickstart).
 + Starting a new [discussion](https://github.com/CrowdStrike/foundry-quickstart/discussions).
 + Submitting a [pull request](https://github.com/CrowdStrike/foundry-quickstart/pulls) to potentially resolve the issue.
-+ Sending an email to __devrel@crowdstrike.com__.
++ Sending an email to __oss-security@crowdstrike.com__.
 
 ## Disclosure and mitigation process
 
