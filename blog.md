@@ -139,7 +139,7 @@ Select any of the detections to open the details panel. Scroll down, and you wil
 
 ![My First Extension screenshot](images/first-extension-screenshot.png)
 
-The Foundry platform is in development mode, which means it has an open connection to your local machine. This means you can edit `ui/extensions/My First Extension/src/app.js` in your favorite editor, and you can see the changes right away. For example, I changed mine to say "Hello, Falcon Foundry\!", then right-clicked on my app in Chrome and selected **Reload Frame**. My changes were viewable right away. Pretty slick, eh?
+The Foundry platform is in development mode, which means it has an open connection to your local machine. This means you can edit `ui/extensions/My First Extension/src/app.js` in your favorite editor, and you can see the changes right away. For example, I changed mine to say "Hello, Falcon Foundry!", and saved the file. My changes were reflected right away. Pretty slick, eh?
 
 ![Hello, Falcon Foundry](images/hello-falcon-foundry.png)
 
