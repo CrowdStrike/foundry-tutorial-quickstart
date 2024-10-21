@@ -6,12 +6,13 @@
 
 > A basic "Hello World" app with Foundry.
 
-This code is the result of doing the Falcon Foundry Quickstart. To see how it was created, please visit our documentation: [US-1](https://falcon.crowdstrike.com/documentation/page/p3e6b484/foundry-quickstart) | [US-2](https://falcon.us-2.crowdstrike.com/documentation/page/p3e6b484/foundry-quickstart) | [EU](https://falcon.eu-1.crowdstrike.com/documentation/page/p3e6b484/foundry-quickstart).
+This code is the result of doing the Falcon Foundry Quickstart. To see how it was created, please [visit our documentation](https://falcon.crowdstrike.com/login/?unilogin=true&next=/documentation/page/p3e6b484/foundry-quickstart).
 
 ## Prerequisites
 
-- Falcon Insight XDR or Falcon Prevent
-- The Foundry CLI (instructions below)
+- Falcon Insight XDR or Falcon Prevent (one app)
+- Falcon Next-Gen SIEM or Falcon Foundry (1+ apps depending on entitlement)
+- The latest version of the Foundry CLI (instructions below)
 
 ### Install the Foundry CLI
 
