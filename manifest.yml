@@ -1,13 +1,20 @@
 app_id: 89b29ceca89f4868869744ee93a1c648
 name: foundry-quickstart
-description: My first Foundry app
+description: My First Foundry app
 logo: ""
+vendor: ""
+vendor_products: []
+use_case: Endpoint security
 manifest_version: "2023-05-09"
-ignored: []
+ignored:
+    - .+/node_modules$
+    - .+/node_modules/.+
+    - .+/venv$
+    - .+/venv/.+
 ui:
     homepage: ""
     extensions:
-        - id: 55b2e28da5854943a229a7a3bfdf6249
+        - id: f6edf33b89074eb0921568e89ec02b3f
           name: My First Extension
           description: UI extension for Endpoint Detections page
           path: ui/extensions/My First Extension/src
@@ -24,6 +31,7 @@ ui:
             media-src: []
             object-src: []
           permissions: []
+          is_ui_builder: false
     pages: {}
     dashboards: {}
     navigation: {}
@@ -36,5 +44,8 @@ auth:
     roles: []
 functions: []
 workflows: []
+parsers: []
 logscale:
     saved_searches: []
+lookup_files: []
+app_docs: []
