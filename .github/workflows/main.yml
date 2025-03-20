@@ -20,18 +20,18 @@ jobs:
           brew install crowdstrike/foundry-cli/foundry
       - name: Create profile for Foundry CLI
         run: |
-          brew tap crowdstrike/foundry-cli
-          brew install crowdstrike/foundry-cli/foundry
           mkdir -p ~/.config/foundry
+          rm ~/.config/foundry/configuration.yml
           touch ~/.config/foundry/configuration.yml
           echo "profiles:" > ~/.config/foundry/configuration.yml
-          echo "- name: Test CID" > ~/.config/foundry/configuration.yml
-          echo "  cloud_region: us-1" > ~/.config/foundry/configuration.yml
-          echo "  credentials:" > ~/.config/foundry/configuration.yml
-          echo "    cid: ${{ secrets.CID }}" > ~/.config/foundry/configuration.yml
-          echo "    api_client_id: ${{ secrets.CLIENT_ID }}" > ~/.config/foundry/configuration.yml
-          echo "    api_client_secret: ${{ secrets.CLIENT_SECRET }}" > ~/.config/foundry/configuration.yml
-          echo "active_profile: Test CID" > ~/.config/foundry/configuration.yml
+          echo "- name: Test CID" >> ~/.config/foundry/configuration.yml
+          echo "  cloud_region: us-1" >> ~/.config/foundry/configuration.yml
+          echo "  credentials:" >> ~/.config/foundry/configuration.yml
+          echo "    cid: ${{ secrets.CID }}" >> ~/.config/foundry/configuration.yml
+          echo "    api_client_id: ${{ secrets.CLIENT_ID }}" >> ~/.config/foundry/configuration.yml
+          echo "    api_client_secret: ${{ secrets.CLIENT_SECRET }}" >> ~/.config/foundry/configuration.yml
+          echo "active_profile: Test CID" >> ~/.config/foundry/configuration.yml
+          echo "logging.debug: true" >> ~/.config/foundry/configuration.yml
       - name: List app deployments
         run: foundry apps list-deployments
       - name: Deploy app to Falcon
