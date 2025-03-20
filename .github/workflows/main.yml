@@ -32,7 +32,10 @@ jobs:
           echo "    api_client_secret: ${{ secrets.CLIENT_SECRET }}" >> ~/.config/foundry/configuration.yml
           echo "active_profile: Test CID" >> ~/.config/foundry/configuration.yml
           echo "logging.debug: true" >> ~/.config/foundry/configuration.yml
-      - name: List app deployments
-        run: foundry apps list-deployments
+      - name: Install yq
+        run: brew install yq
+      - name: Remove ids from manifest
+        run: |
+          yq -i 'del(.. | select(has("id")).id) | del(.. | select(has("app_id")).app_id)' manifest.yml
       - name: Deploy app to Falcon
         run: foundry apps deploy --change-type=major --change-log="e2e deploy"
