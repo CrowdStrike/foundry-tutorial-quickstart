@@ -39,3 +39,5 @@ jobs:
           yq -i 'del(.. | select(has("id")).id) | del(.. | select(has("app_id")).app_id)' manifest.yml
       - name: Deploy app to Falcon
         run: foundry apps deploy --change-type=major --change-log="e2e deploy"
+      - name: Delete app from Falcon
+        run: foundry apps delete
