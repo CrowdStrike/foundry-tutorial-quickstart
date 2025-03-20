@@ -21,7 +21,7 @@ jobs:
       - name: Create profile for Foundry CLI
         run: |
           mkdir -p ~/.config/foundry
-          rm ~/.config/foundry/configuration.yml
+          rm -f ~/.config/foundry/configuration.yml
           touch ~/.config/foundry/configuration.yml
           echo "profiles:" > ~/.config/foundry/configuration.yml
           echo "- name: Test CID" >> ~/.config/foundry/configuration.yml
