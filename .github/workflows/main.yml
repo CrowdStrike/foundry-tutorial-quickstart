@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: app
       - name: Set up Homebrew
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@master
@@ -36,8 +38,13 @@ jobs:
         run: brew install yq
       - name: Remove ids from manifest
         run: |
+          cd app
           yq -i 'del(.. | select(has("id")).id) | del(.. | select(has("app_id")).app_id)' manifest.yml
       - name: Deploy app to Falcon
-        run: foundry apps deploy --change-type=major --change-log="e2e deploy"
+        run: |
+          cd app
+          foundry apps deploy --change-type=major --change-log="e2e deploy"
       - name: Delete app from Falcon
-        run: foundry apps delete -f
+        run: |
+          cd app
+          foundry apps delete -f
