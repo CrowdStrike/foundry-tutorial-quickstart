@@ -44,19 +44,14 @@ jobs:
         id: deploy
         run: |
           cd app
-          {
-            echo 'DEPLOY_OUTPUT<<EOF'
-            foundry apps deploy --change-type=major --change-log="e2e deploy"
-            echo EOF
-          } >> $GITHUB_ENV
-          echo "DEPLOYMENT_ID=$(echo "$DEPLOY_OUTPUT" | grep -o "app-manager/[0-9a-f]*" | sed 's/app-manager\///')" >> $GITHUB_OUTPUT
+          foundry apps deploy --change-type=major --change-log="e2e deploy"
       - name: Release app to Falcon
         id: release
         run: |
           cd app
-          echo 'outputs ${{ toJson(steps.deploy.outputs) }}'
           sleep 5
-          foundry apps release --change-type=major --notes="e2e release" --deployment-id=${{ steps.deploy.outputs.DEPLOYMENT_ID }}
+          foundry apps release --change-type=major --notes="e2e release"
+          sleep 10
       - name: Delete app from Falcon
         run: |
           cd app
