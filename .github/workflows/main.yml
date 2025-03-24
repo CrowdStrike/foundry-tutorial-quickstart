@@ -54,7 +54,8 @@ jobs:
         id: release
         run: |
           cd app
-          echo 'outputs ${{ steps.deploy.outputs }}'
+          echo 'outputs ${{ toJson(steps.deploy.outputs) }}'
+          sleep 5
           foundry apps release --change-type=major --notes="e2e release" --deployment-id=${{ steps.deploy.outputs.DEPLOYMENT_ID }}
       - name: Delete app from Falcon
         run: |
