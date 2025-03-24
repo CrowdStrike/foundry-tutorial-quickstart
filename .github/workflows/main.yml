@@ -26,14 +26,14 @@ jobs:
           rm -f ~/.config/foundry/configuration.yml
           touch ~/.config/foundry/configuration.yml
           echo "profiles:" > ~/.config/foundry/configuration.yml
-          echo "- name: Test CID" >> ~/.config/foundry/configuration.yml
+          echo "- name: E2E CID" >> ~/.config/foundry/configuration.yml
           echo "  cloud_region: us-1" >> ~/.config/foundry/configuration.yml
           echo "  credentials:" >> ~/.config/foundry/configuration.yml
           echo "    cid: ${{ secrets.CID }}" >> ~/.config/foundry/configuration.yml
           echo "    api_client_id: ${{ secrets.CLIENT_ID }}" >> ~/.config/foundry/configuration.yml
           echo "    api_client_secret: ${{ secrets.CLIENT_SECRET }}" >> ~/.config/foundry/configuration.yml
-          echo "active_profile: Test CID" >> ~/.config/foundry/configuration.yml
-          echo "logging.debug: true" >> ~/.config/foundry/configuration.yml
+          echo "active_profile: E2E CID" >> ~/.config/foundry/configuration.yml
+          echo "logging.debug: false" >> ~/.config/foundry/configuration.yml
       - name: Install yq
         run: brew install yq
       - name: Remove ids from manifest
@@ -41,9 +41,20 @@ jobs:
           cd app
           yq -i 'del(.. | select(has("id")).id) | del(.. | select(has("app_id")).app_id)' manifest.yml
       - name: Deploy app to Falcon
+        id: deploy
         run: |
           cd app
-          foundry apps deploy --change-type=major --change-log="e2e deploy"
+          {
+            echo 'DEPLOY_OUTPUT<<EOF'
+            foundry apps deploy --change-type=major --change-log="e2e deploy"
+            echo EOF
+          } >> $GITHUB_ENV
+          echo "$OUTPUT" | grep -o "app-manager/[0-9a-f]*" | sed 's/app-manager\///' >> $GITHUB_OUTPUT
+      - name: Release app to Falcon
+        id: release
+        run: |
+          cd app
+          foundry apps release --change-type=major --notes="e2e release" --deployment-id ${{ steps.deploy.outputs }}
       - name: Delete app from Falcon
         run: |
           cd app
