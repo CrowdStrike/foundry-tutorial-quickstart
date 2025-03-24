@@ -49,13 +49,11 @@ jobs:
             foundry apps deploy --change-type=major --change-log="e2e deploy"
             echo EOF
           } >> $GITHUB_ENV
-          echo $DEPLOY_OUTPUT
-          echo "DEPLOYMENT_ID=($DEPLOY_OUTPUT" | grep -o "app-manager/[0-9a-f]*" | sed 's/app-manager\///') >> $GITHUB_OUTPUT
+          echo "DEPLOYMENT_ID=$(echo "$DEPLOY_OUTPUT" | grep -o "app-manager/[0-9a-f]*" | sed 's/app-manager\///')" >> $GITHUB_OUTPUT
       - name: Release app to Falcon
         id: release
         run: |
           cd app
-          echo $GITHUB_OUTPUT
           echo 'stdout ${{ steps.deploy.outputs.DEPLOYMENT_ID }}'
           foundry apps release --change-type=major --notes="e2e release" --deployment-id ${{ steps.deploy.outputs.DEPLOYMENT_ID }}
       - name: Delete app from Falcon
