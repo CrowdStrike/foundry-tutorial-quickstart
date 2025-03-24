@@ -49,7 +49,7 @@ jobs:
             foundry apps deploy --change-type=major --change-log="e2e deploy"
             echo EOF
           } >> $GITHUB_ENV
-          echo "$OUTPUT" | grep -o "app-manager/[0-9a-f]*" | sed 's/app-manager\///' >> $GITHUB_OUTPUT
+          echo "$DEPLOY_OUTPUT" | grep -o "app-manager/[0-9a-f]*" | sed 's/app-manager\///' >> $GITHUB_OUTPUT
       - name: Release app to Falcon
         id: release
         run: |
