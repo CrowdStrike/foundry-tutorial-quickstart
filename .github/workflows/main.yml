@@ -40,6 +40,10 @@ jobs:
         run: |
           cd app
           yq -i 'del(.. | select(has("id")).id) | del(.. | select(has("app_id")).app_id)' manifest.yml
+      - name: Rename app to be unique
+        run: |
+          cd app
+          yq -i '.name = .name + "-${{ github.actor }}-" + "'$(date +"%Y%m%d%H%M")'"'' manifest.yml
       - name: Deploy app to Falcon
         id: deploy
         run: |
