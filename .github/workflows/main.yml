@@ -10,7 +10,7 @@ jobs:
   deploy-and-release:
     runs-on: ubuntu-latest
     env:
-      FOUNDRY_CFG_DIR: ~/.config/foundry
+      FOUNDRY_CONFIG_DIR: ~/.config/foundry
       APP_DIR: app
 
     steps:
