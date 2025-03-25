@@ -43,7 +43,8 @@ jobs:
       - name: Rename app to be unique
         run: |
           cd app
-          yq -i '.name = .name + "-${{ github.actor }}-" + "'$(date +"%Y%m%d%H%M")'"'' manifest.yml
+          yq -i '.name = .name + "-${{ github.actor }}-" + "'$(date +"%Y%m%d%H%M")'"' manifest.yml
+          cat manifest.yml
       - name: Deploy app to Falcon
         id: deploy
         run: |
