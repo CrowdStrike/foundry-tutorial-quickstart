@@ -65,7 +65,7 @@ jobs:
         run: |
           until foundry apps list-deployments | grep -i "successful"; do
             sleep 1
-          end
+          done
           echo "Releasing app..."
           foundry apps release --change-type=major --notes="e2e release"
 
