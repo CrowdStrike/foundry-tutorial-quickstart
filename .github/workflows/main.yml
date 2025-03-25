@@ -55,26 +55,23 @@ jobs:
           yq -i '.name = .name + "-${{ github.actor }}-" + "'$(date +"%Y%m%d%H%M")'"' manifest.yml
           
           echo "Prepared manifest with app name: $(yq '.name' manifest.yml)"
-          cat manifest.yml
 
       - name: Deploy app to Falcon
         working-directory: ${{ env.APP_DIR }}
-        run: |
-          echo "Deploying app..."
-          foundry apps deploy --change-type=major --change-log="e2e deploy"
+        run: foundry apps deploy --change-type=major --change-log="e2e deploy"
 
       - name: Release app to Falcon
         working-directory: ${{ env.APP_DIR }}
         run: |
-          sleep 10
+          until foundry apps list-deployments | grep -i "successful"; do
+            sleep 1
+          end
           echo "Releasing app..."
           foundry apps release --change-type=major --notes="e2e release"
-          sleep 10
 
       - name: Delete app from Falcon
         if: always()
         working-directory: ${{ env.APP_DIR }}
         run: |
-          echo "Cleaning up - deleting app..."
           foundry apps delete -f
           echo "App deleted successfully"
