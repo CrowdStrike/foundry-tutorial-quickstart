@@ -7,57 +7,74 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  deploy-and-release:
     runs-on: ubuntu-latest
+    env:
+      FOUNDRY_CFG_DIR: ~/.config/foundry
+      APP_DIR: app
+
     steps:
       - uses: actions/checkout@v4
         with:
-          path: app
+          path: ${{ env.APP_DIR }}
+
       - name: Set up Homebrew
-        id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@master
-      - name: Install Foundry CLI
+
+      - name: Install required tools
         run: |
           brew tap crowdstrike/foundry-cli
-          brew install crowdstrike/foundry-cli/foundry
+          brew install crowdstrike/foundry-cli/foundry yq
+
       - name: Create profile for Foundry CLI
+        env:
+          CID: ${{ secrets.CID }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
         run: |
-          mkdir -p ~/.config/foundry
-          rm -f ~/.config/foundry/configuration.yml
-          touch ~/.config/foundry/configuration.yml
-          echo "profiles:" > ~/.config/foundry/configuration.yml
-          echo "- name: E2E CID" >> ~/.config/foundry/configuration.yml
-          echo "  cloud_region: us-1" >> ~/.config/foundry/configuration.yml
-          echo "  credentials:" >> ~/.config/foundry/configuration.yml
-          echo "    cid: ${{ secrets.CID }}" >> ~/.config/foundry/configuration.yml
-          echo "    api_client_id: ${{ secrets.CLIENT_ID }}" >> ~/.config/foundry/configuration.yml
-          echo "    api_client_secret: ${{ secrets.CLIENT_SECRET }}" >> ~/.config/foundry/configuration.yml
-          echo "active_profile: E2E CID" >> ~/.config/foundry/configuration.yml
-          echo "logging.debug: false" >> ~/.config/foundry/configuration.yml
-      - name: Install yq
-        run: brew install yq
-      - name: Remove ids from manifest
+          mkdir -p ${{ env.FOUNDRY_CONFIG_DIR }}
+          cat > ${{ env.FOUNDRY_CONFIG_DIR }}/configuration.yml << EOF
+          profiles:
+          - name: E2E CID
+            cloud_region: us-1
+            credentials:
+              cid: ${CID}
+              api_client_id: ${CLIENT_ID}
+              api_client_secret: ${CLIENT_SECRET}
+          active_profile: E2E CID
+          logging.debug: false
+          EOF
+
+      - name: Prepare app manifest
+        working-directory: ${{ env.APP_DIR }}
         run: |
-          cd app
+          # Remove IDs from manifest
           yq -i 'del(.. | select(has("id")).id) | del(.. | select(has("app_id")).app_id)' manifest.yml
-      - name: Rename app to be unique
-        run: |
-          cd app
+          
+          # Generate unique app name
           yq -i '.name = .name + "-${{ github.actor }}-" + "'$(date +"%Y%m%d%H%M")'"' manifest.yml
+          
+          echo "Prepared manifest with app name: $(yq '.name' manifest.yml)"
           cat manifest.yml
+
       - name: Deploy app to Falcon
-        id: deploy
+        working-directory: ${{ env.APP_DIR }}
         run: |
-          cd app
+          echo "Deploying app..."
           foundry apps deploy --change-type=major --change-log="e2e deploy"
+
       - name: Release app to Falcon
-        id: release
+        working-directory: ${{ env.APP_DIR }}
         run: |
-          cd app
-          sleep 5
+          sleep 10
+          echo "Releasing app..."
           foundry apps release --change-type=major --notes="e2e release"
           sleep 10
+
       - name: Delete app from Falcon
+        if: always()
+        working-directory: ${{ env.APP_DIR }}
         run: |
-          cd app
+          echo "Cleaning up - deleting app..."
           foundry apps delete -f
+          echo "App deleted successfully"
