@@ -10,43 +10,19 @@ jobs:
   deploy-and-release:
     runs-on: ubuntu-latest
     env:
-      FOUNDRY_CONFIG_DIR: ~/.config/foundry
-      APP_DIR: app
-
+      FOUNDRY_API_CLIENT_ID: ${{ secrets.FOUNDRY_API_CLIENT_ID }}
+      FOUNDRY_API_CLIENT_SECRET: ${{ secrets.FOUNDRY_API_CLIENT_SECRET }}
+      FOUNDRY_CID: ${{ secrets.FOUNDRY_CID }}
+      FOUNDRY_CLOUD_REGION: ${{ secrets.FOUNDRY_CLOUD_REGION }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: ${{ env.APP_DIR }}
-
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@master
-
       - name: Install required tools
         run: |
           brew tap crowdstrike/foundry-cli
           brew install crowdstrike/foundry-cli/foundry yq
-
-      - name: Create profile for Foundry CLI
-        env:
-          CID: ${{ secrets.CID }}
-          CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-        run: |
-          mkdir -p ${{ env.FOUNDRY_CONFIG_DIR }}
-          cat > ${{ env.FOUNDRY_CONFIG_DIR }}/configuration.yml << EOF
-          profiles:
-          - name: E2E CID
-            cloud_region: us-1
-            credentials:
-              cid: ${CID}
-              api_client_id: ${CLIENT_ID}
-              api_client_secret: ${CLIENT_SECRET}
-          active_profile: E2E CID
-          logging.debug: false
-          EOF
-
       - name: Prepare app manifest
-        working-directory: ${{ env.APP_DIR }}
         run: |
           # Remove IDs from manifest
           yq -i 'del(.. | select(has("id")).id) | del(.. | select(has("app_id")).app_id)' manifest.yml
@@ -55,23 +31,17 @@ jobs:
           yq -i '.name = .name + "-${{ github.actor }}-" + "'$(date +"%Y%m%d%H%M")'"' manifest.yml
           
           echo "Prepared manifest with app name: $(yq '.name' manifest.yml)"
-
       - name: Deploy app to Falcon
-        working-directory: ${{ env.APP_DIR }}
         run: foundry apps deploy --change-type=major --change-log="e2e deploy"
-
       - name: Release app to Falcon
-        working-directory: ${{ env.APP_DIR }}
         run: |
           until foundry apps list-deployments | grep -i "successful"; do
             sleep 1
           done
           echo "Releasing app..."
           foundry apps release --change-type=major --notes="e2e release"
-
       - name: Delete app from Falcon
         if: always()
-        working-directory: ${{ env.APP_DIR }}
         run: |
           foundry apps delete -f
           echo "App deleted successfully"
