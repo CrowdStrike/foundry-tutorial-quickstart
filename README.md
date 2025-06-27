@@ -6,6 +6,9 @@
 
 > A basic "Hello World" app with Foundry.
 
+> [!IMPORTANT]  
+> To view this tutorial and import the app, you need access to the Falcon console.
+
 This code is the result of doing the Falcon Foundry Quickstart. To see how it was created, please [visit our documentation](https://falcon.crowdstrike.com/login/?unilogin=true&next=/documentation/page/p3e6b484/foundry-quickstart).
 
 ## Prerequisites
