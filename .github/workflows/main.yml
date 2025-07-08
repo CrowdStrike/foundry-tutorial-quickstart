@@ -80,7 +80,7 @@ jobs:
           envkey_FALCON_USERNAME: ${{ secrets.FALCON_USERNAME }}
           envkey_FALCON_PASSWORD: ${{ secrets.FALCON_PASSWORD }}
           envkey_FALCON_AUTH_SECRET: ${{ secrets.FALCON_AUTH_SECRET }}
-        directory: e2e
+          directory: e2e
       - name: Run Playwright tests
         run: npx playwright test
         working-directory: e2e
