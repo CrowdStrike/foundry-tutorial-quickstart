@@ -1,15 +1,13 @@
 {
   "name": "playwright-foundry",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Playwright e2e tests to ensure app installs and renders properly",
   "scripts": {
     "test": "npx playwright test",
     "test:ui": "npx playwright test --ui",
     "test:debug": "npx playwright test --debug"
   },
   "keywords": [],
-  "author": "matt.raible@crowdstrike.com <matt.raible@crowdstrike.com>",
   "license": "MIT",
   "type": "commonjs",
   "dependencies": {

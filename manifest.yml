@@ -1,3 +1,4 @@
+app_id: 475493ae3e444bcebf70dc61e54bbc49
 name: foundry-quickstart
 description: My First Foundry app
 logo: ""
@@ -13,7 +14,8 @@ ignored:
 ui:
     homepage: ""
     extensions:
-        - name: My First Extension
+        - id: 4e5617d95ca74ff5824c6e3a01e5a112
+          name: My First Extension
           description: UI extension for Endpoint Detections page
           path: ui/extensions/My First Extension/src
           entrypoint: ui/extensions/My First Extension/src/index.html
@@ -46,4 +48,4 @@ parsers: []
 logscale:
     saved_searches: []
 lookup_files: []
-app_docs: []
+docs: {}

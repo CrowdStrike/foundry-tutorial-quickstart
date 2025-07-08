@@ -51,7 +51,11 @@ jobs:
           # Generate unique app name
           yq -i '.name = .name + "-${{ github.actor }}-" + "'$(date +"%Y%m%d%H%M")'"' manifest.yml
           
-          echo "Prepared manifest with app name: $(yq '.name' manifest.yml)"
+          # Set app name as environment variable
+          APP_NAME=$(yq '.name' manifest.yml)
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+          
+          echo "Prepared manifest with app name: $APP_NAME"
 
       - name: Deploy app to Falcon
         run: |
@@ -103,6 +107,7 @@ jobs:
           envkey_FALCON_USERNAME: ${{ secrets.FALCON_USERNAME }}
           envkey_FALCON_PASSWORD: ${{ secrets.FALCON_PASSWORD }}
           envkey_FALCON_AUTH_SECRET: ${{ secrets.FALCON_AUTH_SECRET }}
+          envkey_APP_NAME: $APP_NAME
           directory: e2e
 
       - name: Run Playwright tests
@@ -120,5 +125,6 @@ jobs:
       - name: Delete app from Falcon
         if: always()
         run: |
+          echo "Deleting app: $APP_NAME"
           foundry apps delete -f
           echo "App deleted successfully"

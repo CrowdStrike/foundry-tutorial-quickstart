@@ -1,5 +1,8 @@
 import { test, expect, Page } from '@playwright/test';
 import { baseURL } from '../src/utils.cjs';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 test.describe("Foundry", () => {
   let page: Page;
@@ -15,17 +18,48 @@ test.describe("Foundry", () => {
     await page.close();
   });
 
-  test("Check title", async () => {
-    await page.waitForTimeout(2000);
-    const title = await page.title();
-    await page.screenshot({ path: 'test-results/screenshot.png' });
-    expect(title).toBe("Home | Foundry | Falcon"); // without the wait: Falcon Foundry | Falcon
+  test("Ensure Foundry loads", async () => {
+    await expect(page).toHaveTitle("Home | Foundry | Falcon");
   });
 
   test("App manager", async()=> {
     await page.getByRole("link", { name: "App manager" }).click();
-    await page.waitForTimeout(2000);
-    const title = await page.title();
-    expect(title).toBe("App manager | Foundry | Falcon");
+    await expect(page).toHaveTitle("App manager | Foundry | Falcon");
+
+    // Find app
+    const appList = page.getByTestId("custom-apps-list")
+    const appText = appList.getByText(process.env.APP_NAME);
+    await appText.waitFor({ state: "visible" });
+    const parent = appText.locator("../../../../..");
+    await parent.locator("button").click();
+    await page.getByText("View in app catalog").click();
+
+    await expect(page).toHaveTitle("App catalog | Foundry | Falcon");
+
+    // Install now
+    const installBtn = page.getByTestId("app-details-page__install-button")
+    await expect(installBtn).toBeVisible();
+    await installBtn.click();
+
+    // Wait for dialog to load
+    await page.waitForLoadState("networkidle");
+
+    // Save and install
+    const submitBtn = page.getByTestId("submit")
+    await submitBtn.waitFor({ state: "visible" });
+    await submitBtn.click();
+
+    // Wait for next screen to load
+    await page.waitForLoadState("networkidle");
+
+    // Verify installed
+    const status = page.getByTestId("status-text");
+    await status.waitFor({ state: "visible" });
+    await expect(status).toHaveText("Installed");
+
+    await page.screenshot({ path: "test-results/screenshot.png" });
+
+    // todo: create a detection or two to click on,
+    // todo: navigate to Endpoint security > Endpoint detections and confirm app renders
   });
 });
