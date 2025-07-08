@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  deploy-and-release:
+  e2e:
     runs-on: ubuntu-latest
     env:
       FOUNDRY_CONFIG_DIR: ~/.config/foundry
@@ -64,7 +64,6 @@ jobs:
           echo "Releasing app..."
           foundry apps release --change-type=major --notes="e2e release"
 
-      # Playwright tests
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
