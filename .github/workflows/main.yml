@@ -64,14 +64,15 @@ jobs:
           echo "Releasing app..."
           foundry apps release --change-type=major --notes="e2e release"
 
-      - uses: actions/setup-node@v4
+      - name: Install Node LTS
+        uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - name: Install dependencies
+      - name: Install Playwright dependencies
         run: npm ci
         working-directory: e2e
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
         working-directory: e2e
       - name: Make envfile
         uses: SpicyPizza/create-envfile@v2
