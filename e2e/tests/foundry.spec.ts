@@ -22,7 +22,7 @@ test.describe("Foundry", () => {
     await expect(page).toHaveTitle("Home | Foundry | Falcon");
   });
 
-  test("App manager", async()=> {
+  test("Install using App manager", async()=> {
     await page.getByRole("link", { name: "App manager" }).click();
     await expect(page).toHaveTitle("App manager | Foundry | Falcon");
 
