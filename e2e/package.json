@@ -11,7 +11,7 @@
   "license": "MIT",
   "type": "commonjs",
   "dependencies": {
-    "dotenv": "^17.0.1",
+    "@dotenvx/dotenvx": "^1.47.3",
     "otpauth": "^9.4.0"
   },
   "devDependencies": {

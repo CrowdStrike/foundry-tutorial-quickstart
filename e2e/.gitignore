@@ -1,5 +1,6 @@
-# .dotenv
+# .dotenvx
 .env
+.env.keys
 
 # IntelliJ IDEA
 .idea

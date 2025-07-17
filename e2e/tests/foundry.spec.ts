@@ -57,9 +57,13 @@ test.describe("Foundry", () => {
     await status.waitFor({ state: "visible" });
     await expect(status).toHaveText("Installed");
 
+    // Navigate to Host management socket to see UI extension
+    await page.getByTestId("nav-trigger").click();
+    await page.getByText("Host setup and management").click();
+    await page.getByText("Host management").click();
+
     await page.screenshot({ path: "test-results/screenshot.png" });
 
-    // todo: create a detection or two to click on,
     // todo: navigate to Endpoint security > Endpoint detections and confirm app renders
   });
 });

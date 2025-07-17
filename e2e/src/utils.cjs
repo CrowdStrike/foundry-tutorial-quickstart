@@ -1,7 +1,7 @@
 'use strict';
 
 const OTPAuth = require('otpauth');
-const dotenv = require('dotenv');
+const dotenv = require('@dotenvx/dotenvx');
 
 dotenv.config();
 

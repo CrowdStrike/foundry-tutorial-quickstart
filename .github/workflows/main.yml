@@ -111,7 +111,7 @@ jobs:
           directory: e2e
 
       - name: Run Playwright tests
-        run: npx playwright test
+        run: npx dotenvx run -- npx playwright test
         working-directory: e2e
 
       - name: Upload Playwright report
