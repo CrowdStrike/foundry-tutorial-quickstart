@@ -25,6 +25,9 @@ jobs:
           brew tap crowdstrike/foundry-cli
           brew install crowdstrike/foundry-cli/foundry yq
 
+      - name: Create directory for Foundry CLI
+        run: mkdir -p ~/.config/foundry
+
       - name: Prepare app manifest
         run: |
           # Remove IDs from manifest
