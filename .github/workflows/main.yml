@@ -10,8 +10,10 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     env:
-      FOUNDRY_CONFIG_DIR: ~/.config/foundry
-
+      FOUNDRY_API_CLIENT_ID: ${{ secrets.FOUNDRY_API_CLIENT_ID }}
+      FOUNDRY_API_CLIENT_SECRET: ${{ secrets.FOUNDRY_API_CLIENT_SECRET }}
+      FOUNDRY_CID: ${{ secrets.FOUNDRY_CID }}
+      FOUNDRY_CLOUD_REGION: ${{ secrets.FOUNDRY_CLOUD_REGION }}
     steps:
       - uses: actions/checkout@v4
 
@@ -23,27 +25,10 @@ jobs:
           brew tap crowdstrike/foundry-cli
           brew install crowdstrike/foundry-cli/foundry yq
 
-      - name: Create profile for Foundry CLI
-        env:
-          CID: ${{ secrets.FOUNDRY_CID }}
-          CLIENT_ID: ${{ secrets.FOUNDRY_API_CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.FOUNDRY_API_CLIENT_SECRET }}
-          CLOUD_REGION: ${{ secrets.FOUNDRY_CLOUD_REGION }}
-        run: |
-          mkdir -p ${{ env.FOUNDRY_CONFIG_DIR }}
-          cat > ${{ env.FOUNDRY_CONFIG_DIR }}/configuration.yml << EOF
-          profiles:
-          - name: E2E CID
-            cloud_region: ${CLOUD_REGION}
-            credentials:
-              cid: ${CID}
-              api_client_id: ${CLIENT_ID}
-              api_client_secret: ${CLIENT_SECRET}
-          active_profile: E2E CID
-          logging.debug: false
-          EOF
+      - name: Create directory for Foundry CLI
+        run: mkdir -p ~/.config/foundry
 
-      - name: Prepare app manifests
+      - name: Prepare app manifest
         run: |
           # Remove IDs from manifest
           yq -i 'del(.. | select(has("id")).id) | del(.. | select(has("app_id")).app_id)' manifest.yml
