@@ -5,9 +5,42 @@ export class EndpointDetectionsPage {
 
   async navigateToEndpointDetections() {
     try {
-      // Open navigation menu
-      const navTrigger = this.page.getByTestId('nav-trigger');
-      await navTrigger.waitFor({ state: 'visible', timeout: 10000 });
+      // Open navigation menu - try multiple possible selectors
+      let navTrigger;
+      
+      // Try different common selectors for navigation triggers
+      const possibleSelectors = [
+        'nav-trigger',
+        'navigation-trigger', 
+        'menu-trigger',
+        'sidebar-trigger',
+        'hamburger-menu'
+      ];
+      
+      let triggerFound = false;
+      for (const selector of possibleSelectors) {
+        navTrigger = this.page.getByTestId(selector);
+        if (await navTrigger.isVisible({ timeout: 2000 })) {
+          triggerFound = true;
+          break;
+        }
+      }
+      
+      // If testid selectors don't work, try other approaches
+      if (!triggerFound) {
+        // Try by role
+        navTrigger = this.page.getByRole('button', { name: /menu|navigation|nav/i });
+        if (await navTrigger.isVisible({ timeout: 2000 })) {
+          triggerFound = true;
+        }
+      }
+      
+      // Final fallback - look for common navigation button patterns
+      if (!triggerFound) {
+        navTrigger = this.page.locator('button[aria-label*="menu"], button[aria-label*="navigation"], .nav-trigger, .menu-button, [class*="nav-trigger"]').first();
+        await navTrigger.waitFor({ state: 'visible', timeout: 5000 });
+      }
+      
       await navTrigger.click();
       
       // Navigate to Endpoint security
