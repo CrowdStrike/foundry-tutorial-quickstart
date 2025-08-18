@@ -5,51 +5,18 @@ export class EndpointDetectionsPage {
 
   async navigateToEndpointDetections() {
     try {
-      // Open navigation menu - try multiple possible selectors
-      let navTrigger;
+      // Open navigation menu - the correct selector is the "Menu" button
+      const menuButton = this.page.getByRole('button', { name: 'Menu', exact: true });
+      await menuButton.waitFor({ state: 'visible', timeout: 10000 });
+      await menuButton.click();
       
-      // Try different common selectors for navigation triggers
-      const possibleSelectors = [
-        'nav-trigger',
-        'navigation-trigger', 
-        'menu-trigger',
-        'sidebar-trigger',
-        'hamburger-menu'
-      ];
+      // Navigate to Endpoint security - look for the button that contains "Endpoint security"
+      const endpointSecurityButton = this.page.getByRole('button', { name: /Endpoint security/ });
+      await endpointSecurityButton.waitFor({ state: 'visible', timeout: 10000 });
+      await endpointSecurityButton.click();
       
-      let triggerFound = false;
-      for (const selector of possibleSelectors) {
-        navTrigger = this.page.getByTestId(selector);
-        if (await navTrigger.isVisible({ timeout: 2000 })) {
-          triggerFound = true;
-          break;
-        }
-      }
-      
-      // If testid selectors don't work, try other approaches
-      if (!triggerFound) {
-        // Try by role
-        navTrigger = this.page.getByRole('button', { name: /menu|navigation|nav/i });
-        if (await navTrigger.isVisible({ timeout: 2000 })) {
-          triggerFound = true;
-        }
-      }
-      
-      // Final fallback - look for common navigation button patterns
-      if (!triggerFound) {
-        navTrigger = this.page.locator('button[aria-label*="menu"], button[aria-label*="navigation"], .nav-trigger, .menu-button, [class*="nav-trigger"]').first();
-        await navTrigger.waitFor({ state: 'visible', timeout: 5000 });
-      }
-      
-      await navTrigger.click();
-      
-      // Navigate to Endpoint security
-      const endpointSecurityLink = this.page.getByText('Endpoint security');
-      await endpointSecurityLink.waitFor({ state: 'visible', timeout: 10000 });
-      await endpointSecurityLink.click();
-      
-      // Navigate to Endpoint detections
-      const endpointDetectionsLink = this.page.getByText('Endpoint detections');
+      // Navigate to Endpoint detections - now it should be a link in the submenu
+      const endpointDetectionsLink = this.page.getByRole('link', { name: 'Endpoint detections' });
       await endpointDetectionsLink.waitFor({ state: 'visible', timeout: 10000 });
       await endpointDetectionsLink.click();
       
