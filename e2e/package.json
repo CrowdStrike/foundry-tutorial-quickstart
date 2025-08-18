@@ -10,6 +10,9 @@
   "keywords": [],
   "license": "MIT",
   "type": "commonjs",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.47.3",
     "otpauth": "^9.4.0"
