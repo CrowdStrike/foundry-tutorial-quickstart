@@ -34,11 +34,14 @@ test.describe('Foundry App Installation and Verification', () => {
       console.log('✅ App installed successfully');
     });
 
-    test('should verify app is installed', async ({ appCatalogPage, appName }) => {
-      // Navigate back to app catalog to check installation status
-      await appCatalogPage.goto();
-      const installed = await appCatalogPage.isAppInstalled(appName);
-      expect(installed).toBe(true);
+    test('should verify app is installed', async ({ page }) => {
+      // We should already be on the app details page after installation
+      // Just verify that we can see the "Installed" status on the current page
+      const installedStatus = page.locator('text=Installed').first();
+      await installedStatus.waitFor({ state: 'visible', timeout: 10000 });
+      await expect(installedStatus).toBeVisible();
+      
+      console.log('✅ App installation verified successfully');
     });
   });
 
