@@ -1,196 +1,211 @@
 import { Page, expect } from '@playwright/test';
+import { BasePage } from './BasePage';
+import { RetryHandler } from '../utils/SmartWaiter';
+import { config } from '../config/TestConfig';
 
-export class AppCatalogPage {
-  constructor(private page: Page) {}
-
-  async goto() {
-    await this.page.goto(this.getBaseURL() + '/foundry/app-catalog');
-    await this.page.waitForLoadState('networkidle');
+export class AppCatalogPage extends BasePage {
+  constructor(page: Page) {
+    super(page, 'AppCatalogPage');
   }
 
-  private getBaseURL(): string {
-    // Get base URL from utils or environment
-    return process.env.FALCON_BASE_URL || 'https://falcon.us-2.crowdstrike.com';
+  protected getPagePath(): string {
+    return '/foundry/app-catalog';
+  }
+
+  protected async verifyPageLoaded(): Promise<void> {
+    await this.waiter.waitForPageLoad('App catalog page');
   }
 
   async isAppInstalled(appName: string): Promise<boolean> {
-    try {
-      // Wait for page to load
-      await this.page.waitForLoadState('networkidle');
-      
-      // Look for the app link first
-      const appLink = this.page.getByRole('link', { name: appName });
-      
-      // If app link is not visible, app might not be deployed yet
-      if (!(await appLink.isVisible({ timeout: 5000 }))) {
-        return false;
-      }
-      
-      // Look in the app card for installation status
-      const appCard = appLink.locator('xpath=../..');
-      
-      // Check for multiple possible indicators of installation
-      const installedIndicators = [
-        appCard.locator('text=Installed'),
-        appCard.locator('[data-testid="app-status"]:has-text("Installed")'),
-        appCard.locator('.installed, [class*="installed"]'),
-        // Also check if we can find an "Open menu" button which typically appears for installed apps
-        appCard.getByRole('button', { name: 'Open menu' })
-      ];
-      
-      // Check if any of these indicators are visible
-      for (const indicator of installedIndicators) {
-        if (await indicator.isVisible({ timeout: 2000 })) {
-          return true;
+    this.logger.step(`Check if app '${appName}' is installed`);
+    
+    return RetryHandler.withPlaywrightRetry(
+      async () => {
+        await this.waiter.waitForPageLoad();
+        
+        const appLink = this.page.getByRole('link', { name: appName });
+        
+        if (!(await this.elementExists(appLink, 5000))) {
+          this.logger.debug(`App '${appName}' not found in catalog`);
+          return false;
         }
-      }
-      
-      return false;
-    } catch (error) {
-      console.log(`Error checking if app ${appName} is installed:`, error.message);
-      return false;
-    }
+        
+        const appCard = appLink.locator('xpath=../..');
+        const installedIndicators = [
+          appCard.locator('text=Installed'),
+          appCard.locator('[data-testid="app-status"]:has-text("Installed")'),
+          appCard.locator('.installed, [class*="installed"]'),
+          appCard.getByRole('button', { name: 'Open menu' })
+        ];
+        
+        for (const indicator of installedIndicators) {
+          if (await this.elementExists(indicator, 2000)) {
+            this.logger.success(`App '${appName}' is installed`);
+            return true;
+          }
+        }
+        
+        return false;
+      },
+      `Check installation status for ${appName}`
+    );
   }
 
-  async uninstallApp(appName: string) {
-    try {
-      const appLink = this.page.getByRole('link', { name: appName });
-      await appLink.waitFor({ state: 'visible', timeout: 10000 });
-      
-      const appCard = appLink.locator('xpath=../..');
-      const menuButton = appCard.getByRole('button', { name: 'Open menu' });
-      await menuButton.waitFor({ state: 'visible', timeout: 5000 });
-      await menuButton.click();
-      
-      const uninstallMenuItem = this.page.getByRole('menuitem', { name: 'Uninstall app' });
-      await uninstallMenuItem.waitFor({ state: 'visible', timeout: 5000 });
-      await uninstallMenuItem.click();
-      
-      const confirmButton = this.page.getByRole('button', { name: 'Uninstall' });
-      await confirmButton.waitFor({ state: 'visible', timeout: 5000 });
-      await confirmButton.click();
-      
-      // Wait for uninstall to complete - look for status change
-      await this.page.waitForLoadState('networkidle');
-      
-      // Wait for the "Installed" status to disappear
-      const installedStatus = appCard.locator('text=Installed');
-      await installedStatus.waitFor({ state: 'detached', timeout: 15000 });
-      
-    } catch (error) {
-      throw new Error(`Failed to uninstall app ${appName}: ${error.message}`);
-    }
-  }
-
-  async navigateToAppDetails(appName: string) {
-    // Wait for the page to fully load first
-    await this.page.waitForLoadState('networkidle');
+  async uninstallApp(appName: string): Promise<void> {
+    this.logger.step(`Uninstall app '${appName}'`);
     
-    const appLink = this.page.getByRole('link', { name: appName });
-    
-    try {
-      // First attempt: wait for the app link to be visible
-      await appLink.waitFor({ state: 'visible', timeout: 15000 });
-    } catch (error) {
-      // If app link not found, try refreshing the page as the app might still be deploying (CI case)
-      console.log(`App ${appName} not immediately visible, refreshing page...`);
-      await this.page.reload();
-      await this.page.waitForLoadState('networkidle');
-      
-      try {
-        // Try again after refresh with longer timeout (CI case)
-        await appLink.waitFor({ state: 'visible', timeout: 20000 });
-      } catch (finalError) {
-        // App is not available - this could be a local environment issue
-        throw new Error(
-          `❌ App "${appName}" is not available in the app catalog.\n\n` +
-          `This could mean:\n` +
-          `1. In LOCAL environment: The app needs to be manually deployed first using the Foundry CLI\n` +
-          `2. In CI environment: The app deployment step may have failed\n\n` +
-          `To fix this locally:\n` +
-          `- Run: foundry app deploy\n` +
-          `- Then run: foundry app release\n` +
-          `- Make sure your APP_NAME in .env matches your deployed app name\n\n` +
-          `Current APP_NAME from .env: ${appName}`
+    return RetryHandler.withPlaywrightRetry(
+      async () => {
+        const appLink = await this.waiter.waitForVisible(
+          this.page.getByRole('link', { name: appName }),
+          { description: `App '${appName}' link`, timeout: 10000 }
         );
-      }
-    }
-    
-    await appLink.click();
-    
-    // Wait for the app details page to load
-    await this.page.waitForLoadState('networkidle');
-  }
-
-  async installApp() {
-    try {
-      // First check if the app is already installed by looking for the status
-      const installedStatus = this.page.locator('text=Installed').first();
-      if (await installedStatus.isVisible({ timeout: 3000 })) {
-        console.log('App is already installed, skipping installation');
-        return;
-      }
-      
-      const installBtn = this.page.getByTestId('app-details-page__install-button');
-      await expect(installBtn).toBeVisible({ timeout: 15000 });
-      await installBtn.click();
-
-      // Wait for dialog to load
-      await this.page.waitForLoadState('networkidle');
-
-      // Save and install
-      const submitBtn = this.page.getByTestId('submit');
-      await submitBtn.waitFor({ state: 'visible', timeout: 10000 });
-      await submitBtn.click();
-
-      // Wait for next screen to load
-      await this.page.waitForLoadState('networkidle');
-
-      // Verify installed - wait for status to show "Installed"
-      const status = this.page.getByTestId('status-text');
-      await status.waitFor({ state: 'visible', timeout: 10000 });
-      await expect(status).toHaveText('Installed', { timeout: 60000 });
-      
-    } catch (error) {
-      throw new Error(`Failed to install app: ${error.message}`);
-    }
-  }
-
-  async ensureAppUninstalled(appName: string) {
-    try {
-      // First check if the app is available at all
-      await this.page.waitForLoadState('networkidle');
-      const appLink = this.page.getByRole('link', { name: appName });
-      
-      // Give it a reasonable timeout to appear
-      const isAppVisible = await appLink.isVisible({ timeout: 10000 });
-      
-      if (!isAppVisible) {
-        throw new Error(
-          `❌ App "${appName}" is not found in the app catalog.\n\n` +
-          `This usually means:\n` +
-          `🏠 LOCAL environment: You need to deploy the app first:\n` +
-          `   1. Run: foundry app deploy\n` +
-          `   2. Run: foundry app release\n` +
-          `   3. Verify APP_NAME in .env matches your app\n\n` +
-          `🏗️ CI environment: The deployment step may have failed\n\n` +
-          `Current APP_NAME from .env: ${appName}\n` +
-          `Make sure this matches your app name in the Foundry dashboard.`
+        
+        const appCard = appLink.locator('xpath=../..');
+        
+        await this.smartClick(
+          appCard.getByRole('button', { name: 'Open menu' }),
+          'App menu button'
         );
-      }
-      
-      if (await this.isAppInstalled(appName)) {
-        console.log(`App ${appName} is installed, uninstalling...`);
-        await this.uninstallApp(appName);
-        console.log(`✅ App ${appName} uninstalled successfully`);
-      } else {
-        console.log(`✅ App ${appName} is not installed`);
-      }
-    } catch (error) {
-      if (error.message.includes('not found in the app catalog')) {
-        throw error; // Re-throw our helpful error message
-      }
-      throw new Error(`Failed to ensure app ${appName} is uninstalled: ${error.message}`);
-    }
+        
+        await this.smartClick(
+          this.page.getByRole('menuitem', { name: 'Uninstall app' }),
+          'Uninstall menu item'
+        );
+        
+        await this.smartClick(
+          this.page.getByRole('button', { name: 'Uninstall' }),
+          'Confirm uninstall button'
+        );
+        
+        await this.waiter.waitForPageLoad();
+        
+        // Wait for uninstall to complete
+        await this.waiter.waitForCondition(
+          async () => {
+            const installedStatus = appCard.locator('text=Installed');
+            return !(await this.elementExists(installedStatus, 1000));
+          },
+          'App uninstall to complete',
+          { timeout: 15000 }
+        );
+        
+        this.logger.success(`App '${appName}' uninstalled successfully`);
+      },
+      `Uninstall app ${appName}`
+    );
+  }
+
+  async navigateToAppDetails(appName: string): Promise<void> {
+    this.logger.step(`Navigate to app details for '${appName}'`);
+    
+    return RetryHandler.withPlaywrightRetry(
+      async () => {
+        await this.waiter.waitForPageLoad();
+        
+        let appLink = this.page.getByRole('link', { name: appName });
+        
+        // First attempt: wait for app link
+        if (!(await this.elementExists(appLink, 15000))) {
+          // Second attempt: refresh page (for CI deployment timing)
+          this.logger.debug(`App '${appName}' not immediately visible, refreshing page...`);
+          await this.page.reload();
+          await this.waiter.waitForPageLoad();
+          
+          appLink = this.page.getByRole('link', { name: appName });
+          if (!(await this.elementExists(appLink, 20000))) {
+            const errorMessage = this.buildAppNotFoundError(appName);
+            throw new Error(errorMessage);
+          }
+        }
+        
+        await appLink.click();
+        await this.waiter.waitForPageLoad();
+        
+        this.logger.success(`Navigated to ${appName} details page`);
+      },
+      `Navigate to ${appName} details`
+    );
+  }
+
+  async installApp(): Promise<void> {
+    this.logger.step('Install app via UI');
+    
+    return RetryHandler.withPlaywrightRetry(
+      async () => {
+        // Check if already installed
+        const installedStatus = this.page.locator('text=Installed').first();
+        if (await this.elementExists(installedStatus, 3000)) {
+          this.logger.info('App is already installed, skipping installation');
+          return;
+        }
+        
+        await this.smartClick(
+          this.page.getByTestId('app-details-page__install-button'),
+          'Install button',
+          { timeout: 15000 }
+        );
+        
+        await this.waiter.waitForPageLoad();
+        
+        await this.smartClick(
+          this.page.getByTestId('submit'),
+          'Submit installation button'
+        );
+        
+        await this.waiter.waitForPageLoad();
+        
+        // Wait for installation to complete
+        const statusElement = await this.waiter.waitForVisible(
+          this.page.getByTestId('status-text'),
+          { description: 'Installation status', timeout: 10000 }
+        );
+        
+        await expect(statusElement).toHaveText('Installed', { timeout: 60000 });
+        
+        this.logger.success('App installation completed successfully');
+      },
+      'Install app'
+    );
+  }
+
+  async ensureAppUninstalled(appName: string): Promise<void> {
+    this.logger.step(`Ensure app '${appName}' is uninstalled`);
+    
+    return RetryHandler.withPlaywrightRetry(
+      async () => {
+        await this.waiter.waitForPageLoad();
+        
+        const appLink = this.page.getByRole('link', { name: appName });
+        
+        if (!(await this.elementExists(appLink, 10000))) {
+          const errorMessage = this.buildAppNotFoundError(appName);
+          throw new Error(errorMessage);
+        }
+        
+        if (await this.isAppInstalled(appName)) {
+          this.logger.info(`App '${appName}' is installed, uninstalling...`);
+          await this.uninstallApp(appName);
+          this.logger.success(`App '${appName}' uninstalled successfully`);
+        } else {
+          this.logger.success(`App '${appName}' is not installed`);
+        }
+      },
+      `Ensure ${appName} is uninstalled`
+    );
+  }
+
+  private buildAppNotFoundError(appName: string): string {
+    return [
+      `❌ App "${appName}" is not available in the app catalog.\n`,
+      `This could mean:`,
+      `1. In LOCAL environment: The app needs to be manually deployed first using the Foundry CLI`,
+      `2. In CI environment: The app deployment step may have failed\n`,
+      `To fix this locally:`,
+      `- Run: foundry app deploy`,
+      `- Then run: foundry app release`,
+      `- Make sure your APP_NAME in .env matches your deployed app name\n`,
+      `Current APP_NAME from .env: ${appName}`
+    ].join('\n');
   }
 }

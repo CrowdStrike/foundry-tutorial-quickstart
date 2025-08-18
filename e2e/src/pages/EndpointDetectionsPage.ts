@@ -1,104 +1,108 @@
 import { Page, expect } from '@playwright/test';
+import { BasePage } from './BasePage';
+import { RetryHandler } from '../utils/SmartWaiter';
 
-export class EndpointDetectionsPage {
-  constructor(private page: Page) {}
-
-  async navigateToEndpointDetections() {
-    try {
-      // Navigate directly to Foundry home to ensure we're in the right context
-      console.log('🏠 Starting navigation from Foundry home page...');
-      await this.page.goto(this.getBaseURL() + '/foundry/home');
-      await this.page.waitForLoadState('networkidle');
-      
-      // Wait a moment for the page to fully render
-      await this.page.waitForTimeout(2000);
-      
-      console.log('🔍 Looking for Menu button...');
-      const menuButton = this.page.getByRole('button', { name: 'Menu', exact: true });
-      await menuButton.waitFor({ state: 'visible', timeout: 15000 });
-      
-      console.log('📱 Clicking Menu button...');
-      await menuButton.click();
-      
-      // Wait for the navigation menu to expand
-      await this.page.waitForTimeout(1000);
-      
-      console.log('🛡️ Looking for Endpoint security button...');
-      const endpointSecurityButton = this.page.getByRole('button', { name: /Endpoint security/ });
-      await endpointSecurityButton.waitFor({ state: 'visible', timeout: 10000 });
-      
-      console.log('🛡️ Clicking Endpoint security button...');
-      await endpointSecurityButton.click();
-      
-      // Wait for the submenu to expand
-      await this.page.waitForTimeout(1000);
-      
-      console.log('🔍 Looking for Endpoint detections link...');
-      const endpointDetectionsLink = this.page.getByRole('link', { name: 'Endpoint detections' });
-      await endpointDetectionsLink.waitFor({ state: 'visible', timeout: 10000 });
-      
-      console.log('🎯 Clicking Endpoint detections link...');
-      await endpointDetectionsLink.click();
-      
-      // Wait for page to load and verify we're on the correct page
-      await this.page.waitForLoadState('networkidle');
-      await expect(this.page).toHaveURL(/.*activity-v2\/detections.*/, { timeout: 15000 });
-      
-      console.log('✅ Successfully navigated to Endpoint detections page');
-      
-    } catch (error) {
-      // Take a screenshot for debugging
-      await this.page.screenshot({ path: 'test-results/navigation-error.png' });
-      console.error('❌ Navigation failed:', error.message);
-      throw new Error(`Failed to navigate to Endpoint detections: ${error.message}`);
-    }
+export class EndpointDetectionsPage extends BasePage {
+  constructor(page: Page) {
+    super(page, 'EndpointDetectionsPage');
   }
 
-  private getBaseURL(): string {
-    return process.env.FALCON_BASE_URL || 'https://falcon.us-2.crowdstrike.com';
+  protected getPagePath(): string {
+    return '/activity-v2/detections';
+  }
+
+  protected async verifyPageLoaded(): Promise<void> {
+    await this.verifyUrl(/.*activity-v2\/detections.*/, 'Endpoint detections page');
+  }
+
+  async navigateToEndpointDetections(): Promise<void> {
+    return this.withTiming(
+      async () => {
+        // Start from Foundry home to ensure consistent navigation context
+        this.logger.step('Navigate to Foundry home for consistent context');
+        await this.navigateToPath('/foundry/home', 'Foundry home page');
+        
+        // Open main navigation menu
+        this.logger.step('Open navigation menu');
+        await this.smartClick(
+          this.page.getByRole('button', { name: 'Menu', exact: true }),
+          'Menu button',
+          { timeout: 15000 }
+        );
+        
+        // Wait for menu to expand
+        await this.waiter.waitForMenuExpansion();
+        
+        // Navigate to Endpoint security section
+        this.logger.step('Navigate to Endpoint security');
+        await this.smartClick(
+          this.page.getByRole('button', { name: /Endpoint security/ }),
+          'Endpoint security button'
+        );
+        
+        // Wait for submenu to expand and navigate to Endpoint detections
+        this.logger.step('Navigate to Endpoint detections');
+        await this.smartClick(
+          this.page.getByRole('link', { name: 'Endpoint detections' }),
+          'Endpoint detections link'
+        );
+        
+        // Verify we reached the correct page
+        await this.verifyPageLoaded();
+        this.logger.success('Successfully navigated to Endpoint detections page');
+      },
+      'Navigate to Endpoint detections'
+    );
   }
 
   async verifyUIExtensionText(expectedText: string): Promise<boolean> {
-    const textLocator = this.page.locator(`text=${expectedText}`);
+    this.logger.step(`Look for UI extension text: '${expectedText}'`);
     
-    try {
-      // First attempt: look for text immediately
-      console.log(`🔍 Looking for '${expectedText}' text in UI extension...`);
-      await textLocator.waitFor({ state: 'visible', timeout: 8000 });
-      await expect(textLocator).toBeVisible();
-      console.log(`✅ Found '${expectedText}' text - UI extension is working correctly!`);
-      return true;
-      
-    } catch (error) {
-      // Second attempt: click on a detection to trigger UI extension
-      console.log(`⏳ '${expectedText}' text not immediately visible, trying detection click...`);
-      
-      try {
+    return RetryHandler.withPlaywrightRetry(
+      async () => {
+        const textLocator = this.page.locator(`text=${expectedText}`);
+        
+        // First attempt: look for text immediately
+        if (await this.elementExists(textLocator, 8000)) {
+          await expect(textLocator).toBeVisible();
+          this.logger.success(`Found '${expectedText}' text - UI extension is working!`);
+          return true;
+        }
+        
+        // Second attempt: click on a detection to trigger UI extension
+        this.logger.debug('Text not immediately visible, trying detection click...');
+        
         const firstDetection = this.page.locator('gridcell button').first();
-        await firstDetection.waitFor({ state: 'visible', timeout: 5000 });
-        await firstDetection.click();
+        if (await this.elementExists(firstDetection, 5000)) {
+          await firstDetection.click();
+          
+          // Wait for UI extension to load
+          await this.waiter.waitForCondition(
+            async () => await this.elementExists(textLocator, 1000),
+            'UI extension text to appear after detection click',
+            { timeout: 5000 }
+          );
+          
+          await expect(textLocator).toBeVisible();
+          this.logger.success(`Found '${expectedText}' text after clicking detection!`);
+          return true;
+        }
         
-        // Wait a moment for UI extension to load
-        await this.page.waitForTimeout(2000);
-        
-        // Check again for the text
-        await textLocator.waitFor({ state: 'visible', timeout: 5000 });
-        await expect(textLocator).toBeVisible();
-        console.log(`✅ Found '${expectedText}' text after clicking detection!`);
-        return true;
-        
-      } catch (clickError) {
-        console.log(`ℹ️ '${expectedText}' text not found after trying detection click`);
+        this.logger.info(`'${expectedText}' text not found - may require specific detection data`);
         return false;
+      },
+      `Verify UI extension text: ${expectedText}`,
+      {
+        maxAttempts: 1, // Don't retry this - it's data dependent
+        shouldRetry: () => false
       }
-    }
+    );
   }
 
-  async takeScreenshot(filename: string) {
-    try {
-      await this.page.screenshot({ path: `test-results/${filename}` });
-    } catch (error) {
-      console.log(`⚠️ Failed to take screenshot ${filename}: ${error.message}`);
-    }
+  async takeScreenshot(filename: string): Promise<void> {
+    await super.takeScreenshot(filename, { 
+      page: 'EndpointDetectionsPage',
+      action: 'screenshot' 
+    });
   }
 }
