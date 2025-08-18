@@ -92,13 +92,28 @@ export class AppCatalogPage {
       // First attempt: wait for the app link to be visible
       await appLink.waitFor({ state: 'visible', timeout: 15000 });
     } catch (error) {
-      // If app link not found, try refreshing the page as the app might still be deploying
+      // If app link not found, try refreshing the page as the app might still be deploying (CI case)
       console.log(`App ${appName} not immediately visible, refreshing page...`);
       await this.page.reload();
       await this.page.waitForLoadState('networkidle');
       
-      // Try again after refresh with longer timeout
-      await appLink.waitFor({ state: 'visible', timeout: 20000 });
+      try {
+        // Try again after refresh with longer timeout (CI case)
+        await appLink.waitFor({ state: 'visible', timeout: 20000 });
+      } catch (finalError) {
+        // App is not available - this could be a local environment issue
+        throw new Error(
+          `❌ App "${appName}" is not available in the app catalog.\n\n` +
+          `This could mean:\n` +
+          `1. In LOCAL environment: The app needs to be manually deployed first using the Foundry CLI\n` +
+          `2. In CI environment: The app deployment step may have failed\n\n` +
+          `To fix this locally:\n` +
+          `- Run: foundry app deploy\n` +
+          `- Then run: foundry app release\n` +
+          `- Make sure your APP_NAME in .env matches your deployed app name\n\n` +
+          `Current APP_NAME from .env: ${appName}`
+        );
+      }
     }
     
     await appLink.click();
@@ -143,6 +158,27 @@ export class AppCatalogPage {
 
   async ensureAppUninstalled(appName: string) {
     try {
+      // First check if the app is available at all
+      await this.page.waitForLoadState('networkidle');
+      const appLink = this.page.getByRole('link', { name: appName });
+      
+      // Give it a reasonable timeout to appear
+      const isAppVisible = await appLink.isVisible({ timeout: 10000 });
+      
+      if (!isAppVisible) {
+        throw new Error(
+          `❌ App "${appName}" is not found in the app catalog.\n\n` +
+          `This usually means:\n` +
+          `🏠 LOCAL environment: You need to deploy the app first:\n` +
+          `   1. Run: foundry app deploy\n` +
+          `   2. Run: foundry app release\n` +
+          `   3. Verify APP_NAME in .env matches your app\n\n` +
+          `🏗️ CI environment: The deployment step may have failed\n\n` +
+          `Current APP_NAME from .env: ${appName}\n` +
+          `Make sure this matches your app name in the Foundry dashboard.`
+        );
+      }
+      
       if (await this.isAppInstalled(appName)) {
         console.log(`App ${appName} is installed, uninstalling...`);
         await this.uninstallApp(appName);
@@ -151,6 +187,9 @@ export class AppCatalogPage {
         console.log(`✅ App ${appName} is not installed`);
       }
     } catch (error) {
+      if (error.message.includes('not found in the app catalog')) {
+        throw error; // Re-throw our helpful error message
+      }
       throw new Error(`Failed to ensure app ${appName} is uninstalled: ${error.message}`);
     }
   }
