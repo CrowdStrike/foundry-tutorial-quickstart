@@ -5,19 +5,37 @@ export class EndpointDetectionsPage {
 
   async navigateToEndpointDetections() {
     try {
+      // First, let's make sure we're on a page where the main navigation is available
+      // If we're on an app details page, we might need to navigate to a main page first
+      const currentUrl = this.page.url();
+      console.log(`Current page URL: ${currentUrl}`);
+      
+      // If we're on an app details page, go back to a main page
+      if (currentUrl.includes('/foundry/app-catalog/') && currentUrl.split('/').length > 5) {
+        console.log('Navigating back to main app catalog page...');
+        await this.page.goto(this.getBaseURL() + '/foundry/app-catalog');
+        await this.page.waitForLoadState('networkidle');
+      }
+      
       // Open navigation menu - the correct selector is the "Menu" button
       const menuButton = this.page.getByRole('button', { name: 'Menu', exact: true });
+      console.log('Looking for Menu button...');
       await menuButton.waitFor({ state: 'visible', timeout: 10000 });
+      console.log('Menu button found, clicking...');
       await menuButton.click();
       
       // Navigate to Endpoint security - look for the button that contains "Endpoint security"
       const endpointSecurityButton = this.page.getByRole('button', { name: /Endpoint security/ });
+      console.log('Looking for Endpoint security button...');
       await endpointSecurityButton.waitFor({ state: 'visible', timeout: 10000 });
+      console.log('Endpoint security button found, clicking...');
       await endpointSecurityButton.click();
       
       // Navigate to Endpoint detections - now it should be a link in the submenu
       const endpointDetectionsLink = this.page.getByRole('link', { name: 'Endpoint detections' });
+      console.log('Looking for Endpoint detections link...');
       await endpointDetectionsLink.waitFor({ state: 'visible', timeout: 10000 });
+      console.log('Endpoint detections link found, clicking...');
       await endpointDetectionsLink.click();
       
       // Wait for page to load
@@ -25,10 +43,17 @@ export class EndpointDetectionsPage {
       
       // Verify we're on the correct page
       await expect(this.page).toHaveURL(/.*activity-v2\/detections.*/, { timeout: 15000 });
+      console.log('Successfully navigated to Endpoint detections page');
       
     } catch (error) {
+      // Take a screenshot for debugging
+      await this.page.screenshot({ path: 'test-results/navigation-error.png' });
       throw new Error(`Failed to navigate to Endpoint detections: ${error.message}`);
     }
+  }
+
+  private getBaseURL(): string {
+    return process.env.FALCON_BASE_URL || 'https://falcon.us-2.crowdstrike.com';
   }
 
   async verifyUIExtensionText(expectedText: string): Promise<boolean> {
