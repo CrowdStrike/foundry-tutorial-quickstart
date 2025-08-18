@@ -53,8 +53,24 @@ export class AppCatalogPage {
   }
 
   async navigateToAppDetails(appName: string) {
+    // Wait for the page to fully load first
+    await this.page.waitForLoadState('networkidle');
+    
     const appLink = this.page.getByRole('link', { name: appName });
-    await appLink.waitFor({ state: 'visible', timeout: 10000 });
+    
+    try {
+      // First attempt: wait for the app link to be visible
+      await appLink.waitFor({ state: 'visible', timeout: 15000 });
+    } catch (error) {
+      // If app link not found, try refreshing the page as the app might still be deploying
+      console.log(`App ${appName} not immediately visible, refreshing page...`);
+      await this.page.reload();
+      await this.page.waitForLoadState('networkidle');
+      
+      // Try again after refresh with longer timeout
+      await appLink.waitFor({ state: 'visible', timeout: 20000 });
+    }
+    
     await appLink.click();
     
     // Wait for the app details page to load

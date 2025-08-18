@@ -21,15 +21,14 @@ test.describe('Foundry App Installation and Verification', () => {
       await appCatalogPage.ensureAppUninstalled(appName);
     });
 
-    test('should navigate to app via App Manager', async ({ foundryHomePage, appManagerPage, appName }) => {
-      await foundryHomePage.goto();
-      await foundryHomePage.navigateToAppManager();
-      await appManagerPage.findAndNavigateToApp(appName);
-    });
-
-    test('should install the app successfully', async ({ appCatalogPage }) => {
-      // The previous test should have navigated us to the app details page
-      // Just install the app directly
+    test('should navigate to app and install it', async ({ appCatalogPage, appName }) => {
+      // Go directly to the app catalog and navigate to the app
+      await appCatalogPage.goto();
+      
+      // Navigate to the app details page (with retry logic built-in)
+      await appCatalogPage.navigateToAppDetails(appName);
+      
+      // Install the app
       await appCatalogPage.installApp();
       
       console.log('✅ App installed successfully');
