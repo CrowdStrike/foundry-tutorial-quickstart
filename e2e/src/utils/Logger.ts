@@ -1,5 +1,5 @@
 /**
- * Enterprise-grade structured logging service for E2E tests
+ * Structured logging service for E2E tests
  * Provides consistent, searchable, and actionable logging
  */
 export interface LogContext {

@@ -1,5 +1,5 @@
 /**
- * Enterprise-grade configuration management for Foundry E2E tests
+ * Centralized configuration management for Foundry E2E tests
  * Centralizes all environment variables, validation, and defaults
  */
 export class TestConfig {
@@ -43,7 +43,7 @@ export class TestConfig {
     // App configuration
     this.appName = this.getRequiredEnv('APP_NAME');
     
-    // Test timeouts (enterprise defaults)
+    // Test timeouts (configurable defaults)
     this.defaultTimeout = parseInt(process.env.DEFAULT_TIMEOUT || '30000');
     this.navigationTimeout = parseInt(process.env.NAVIGATION_TIMEOUT || '15000');
     this.retryAttempts = parseInt(process.env.RETRY_ATTEMPTS || '3');

@@ -4,7 +4,7 @@ import { logger, LogContext } from '../utils/Logger';
 import { SmartWaiter, RetryHandler } from '../utils/SmartWaiter';
 
 /**
- * Enterprise-grade base page class
+ * Base page class
  * Eliminates duplication and provides consistent patterns
  */
 export abstract class BasePage {

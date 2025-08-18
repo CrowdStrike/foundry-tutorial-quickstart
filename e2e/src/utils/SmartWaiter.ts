@@ -3,7 +3,7 @@ import { logger } from './Logger';
 import { config } from '../config/TestConfig';
 
 /**
- * Enterprise-grade waiting and retry utilities
+ * Waiting and retry utilities
  * Eliminates hard-coded timeouts with intelligent waiting strategies
  */
 
