@@ -5,49 +5,51 @@ export class EndpointDetectionsPage {
 
   async navigateToEndpointDetections() {
     try {
-      // First, let's make sure we're on a page where the main navigation is available
-      // If we're on an app details page, we might need to navigate to a main page first
-      const currentUrl = this.page.url();
-      console.log(`Current page URL: ${currentUrl}`);
-      
-      // If we're on an app details page, go back to a main page
-      if (currentUrl.includes('/foundry/app-catalog/') && currentUrl.split('/').length > 5) {
-        console.log('Navigating back to main app catalog page...');
-        await this.page.goto(this.getBaseURL() + '/foundry/app-catalog');
-        await this.page.waitForLoadState('networkidle');
-      }
-      
-      // Open navigation menu - the correct selector is the "Menu" button
-      const menuButton = this.page.getByRole('button', { name: 'Menu', exact: true });
-      console.log('Looking for Menu button...');
-      await menuButton.waitFor({ state: 'visible', timeout: 10000 });
-      console.log('Menu button found, clicking...');
-      await menuButton.click();
-      
-      // Navigate to Endpoint security - look for the button that contains "Endpoint security"
-      const endpointSecurityButton = this.page.getByRole('button', { name: /Endpoint security/ });
-      console.log('Looking for Endpoint security button...');
-      await endpointSecurityButton.waitFor({ state: 'visible', timeout: 10000 });
-      console.log('Endpoint security button found, clicking...');
-      await endpointSecurityButton.click();
-      
-      // Navigate to Endpoint detections - now it should be a link in the submenu
-      const endpointDetectionsLink = this.page.getByRole('link', { name: 'Endpoint detections' });
-      console.log('Looking for Endpoint detections link...');
-      await endpointDetectionsLink.waitFor({ state: 'visible', timeout: 10000 });
-      console.log('Endpoint detections link found, clicking...');
-      await endpointDetectionsLink.click();
-      
-      // Wait for page to load
+      // Navigate directly to Foundry home to ensure we're in the right context
+      console.log('🏠 Starting navigation from Foundry home page...');
+      await this.page.goto(this.getBaseURL() + '/foundry/home');
       await this.page.waitForLoadState('networkidle');
       
-      // Verify we're on the correct page
+      // Wait a moment for the page to fully render
+      await this.page.waitForTimeout(2000);
+      
+      console.log('🔍 Looking for Menu button...');
+      const menuButton = this.page.getByRole('button', { name: 'Menu', exact: true });
+      await menuButton.waitFor({ state: 'visible', timeout: 15000 });
+      
+      console.log('📱 Clicking Menu button...');
+      await menuButton.click();
+      
+      // Wait for the navigation menu to expand
+      await this.page.waitForTimeout(1000);
+      
+      console.log('🛡️ Looking for Endpoint security button...');
+      const endpointSecurityButton = this.page.getByRole('button', { name: /Endpoint security/ });
+      await endpointSecurityButton.waitFor({ state: 'visible', timeout: 10000 });
+      
+      console.log('🛡️ Clicking Endpoint security button...');
+      await endpointSecurityButton.click();
+      
+      // Wait for the submenu to expand
+      await this.page.waitForTimeout(1000);
+      
+      console.log('🔍 Looking for Endpoint detections link...');
+      const endpointDetectionsLink = this.page.getByRole('link', { name: 'Endpoint detections' });
+      await endpointDetectionsLink.waitFor({ state: 'visible', timeout: 10000 });
+      
+      console.log('🎯 Clicking Endpoint detections link...');
+      await endpointDetectionsLink.click();
+      
+      // Wait for page to load and verify we're on the correct page
+      await this.page.waitForLoadState('networkidle');
       await expect(this.page).toHaveURL(/.*activity-v2\/detections.*/, { timeout: 15000 });
-      console.log('Successfully navigated to Endpoint detections page');
+      
+      console.log('✅ Successfully navigated to Endpoint detections page');
       
     } catch (error) {
       // Take a screenshot for debugging
       await this.page.screenshot({ path: 'test-results/navigation-error.png' });
+      console.error('❌ Navigation failed:', error.message);
       throw new Error(`Failed to navigate to Endpoint detections: ${error.message}`);
     }
   }
