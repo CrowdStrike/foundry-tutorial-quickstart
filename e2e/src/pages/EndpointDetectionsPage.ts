@@ -60,7 +60,10 @@ export class EndpointDetectionsPage extends BasePage {
     
     return RetryHandler.withPlaywrightRetry(
       async () => {
-        const textLocator = this.page.locator(`text=${expectedText}`);
+        // Use semantic locator for finding text
+        const textLocator = this.page.getByText(expectedText, { exact: true }).or(
+          this.page.locator(`text=${expectedText}`)
+        );
         
         // First attempt: look for text immediately
         if (await this.elementExists(textLocator, 8000)) {
@@ -72,9 +75,15 @@ export class EndpointDetectionsPage extends BasePage {
         // Second attempt: click on a detection to trigger UI extension
         this.logger.debug('Text not immediately visible, trying detection click...');
         
-        const firstDetection = this.page.locator('gridcell button').first();
-        if (await this.elementExists(firstDetection, 5000)) {
-          await firstDetection.click();
+        // Use semantic locator for finding detection button
+        const detectionButton = this.page.getByRole('gridcell').getByRole('button').first().or(
+          this.page.getByRole('button', { name: /detection/i }).first()
+        ).or(
+          this.page.locator('gridcell button').first()
+        );
+        
+        if (await this.elementExists(detectionButton, 5000)) {
+          await detectionButton.click();
           
           // Wait for UI extension to load
           await this.waiter.waitForCondition(

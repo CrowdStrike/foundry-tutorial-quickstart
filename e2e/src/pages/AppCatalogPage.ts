@@ -32,10 +32,11 @@ export class AppCatalogPage extends BasePage {
         
         const appCard = appLink.locator('xpath=../..');
         const installedIndicators = [
-          appCard.locator('text=Installed'),
-          appCard.locator('[data-testid="app-status"]:has-text("Installed")'),
-          appCard.locator('.installed, [class*="installed"]'),
-          appCard.getByRole('button', { name: 'Open menu' })
+          appCard.getByText('Installed'),
+          appCard.getByTestId('app-status').filter({ hasText: 'Installed' }),
+          appCard.locator('.installed, [class*="installed"]'), // Keep CSS as fallback
+          appCard.getByRole('button', { name: 'Open menu' }),
+          appCard.getByRole('button', { name: /installed/i })
         ];
         
         for (const indicator of installedIndicators) {
