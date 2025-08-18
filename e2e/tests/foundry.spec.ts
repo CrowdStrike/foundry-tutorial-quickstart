@@ -27,16 +27,17 @@ test.describe('Foundry App Installation and Verification', () => {
       await appManagerPage.findAndNavigateToApp(appName);
     });
 
-    test('should install the app successfully', async ({ appCatalogPage, appName }) => {
-      // The previous test should have navigated us to the app catalog page
-      // Just ensure we're on the app details page and install
-      await appCatalogPage.navigateToAppDetails(appName);
+    test('should install the app successfully', async ({ appCatalogPage }) => {
+      // The previous test should have navigated us to the app details page
+      // Just install the app directly
       await appCatalogPage.installApp();
       
       console.log('✅ App installed successfully');
     });
 
     test('should verify app is installed', async ({ appCatalogPage, appName }) => {
+      // Navigate back to app catalog to check installation status
+      await appCatalogPage.goto();
       const installed = await appCatalogPage.isAppInstalled(appName);
       expect(installed).toBe(true);
     });

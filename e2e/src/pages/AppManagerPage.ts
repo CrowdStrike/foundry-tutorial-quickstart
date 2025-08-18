@@ -13,5 +13,13 @@ export class AppManagerPage {
     await this.page.getByText('View in app catalog').click();
     
     await expect(this.page).toHaveTitle('App catalog | Foundry | Falcon');
+    
+    // After arriving at app catalog, navigate to the specific app details
+    const appLink = this.page.getByRole('link', { name: appName });
+    await appLink.waitFor({ state: 'visible', timeout: 10000 });
+    await appLink.click();
+    
+    // Wait for the app details page to load
+    await this.page.waitForLoadState('networkidle');
   }
 }
