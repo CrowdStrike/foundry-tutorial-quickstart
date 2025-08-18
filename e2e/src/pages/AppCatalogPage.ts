@@ -14,12 +14,42 @@ export class AppCatalogPage {
   }
 
   async isAppInstalled(appName: string): Promise<boolean> {
-    const appLink = this.page.getByRole('link', { name: appName });
-    if (!(await appLink.isVisible())) return false;
-    
-    const appCard = appLink.locator('xpath=../..');
-    const installedStatus = appCard.locator('text=Installed');
-    return await installedStatus.isVisible();
+    try {
+      // Wait for page to load
+      await this.page.waitForLoadState('networkidle');
+      
+      // Look for the app link first
+      const appLink = this.page.getByRole('link', { name: appName });
+      
+      // If app link is not visible, app might not be deployed yet
+      if (!(await appLink.isVisible({ timeout: 5000 }))) {
+        return false;
+      }
+      
+      // Look in the app card for installation status
+      const appCard = appLink.locator('xpath=../..');
+      
+      // Check for multiple possible indicators of installation
+      const installedIndicators = [
+        appCard.locator('text=Installed'),
+        appCard.locator('[data-testid="app-status"]:has-text("Installed")'),
+        appCard.locator('.installed, [class*="installed"]'),
+        // Also check if we can find an "Open menu" button which typically appears for installed apps
+        appCard.getByRole('button', { name: 'Open menu' })
+      ];
+      
+      // Check if any of these indicators are visible
+      for (const indicator of installedIndicators) {
+        if (await indicator.isVisible({ timeout: 2000 })) {
+          return true;
+        }
+      }
+      
+      return false;
+    } catch (error) {
+      console.log(`Error checking if app ${appName} is installed:`, error.message);
+      return false;
+    }
   }
 
   async uninstallApp(appName: string) {
@@ -79,6 +109,13 @@ export class AppCatalogPage {
 
   async installApp() {
     try {
+      // First check if the app is already installed by looking for the status
+      const installedStatus = this.page.locator('text=Installed').first();
+      if (await installedStatus.isVisible({ timeout: 3000 })) {
+        console.log('App is already installed, skipping installation');
+        return;
+      }
+      
       const installBtn = this.page.getByTestId('app-details-page__install-button');
       await expect(installBtn).toBeVisible({ timeout: 15000 });
       await installBtn.click();
