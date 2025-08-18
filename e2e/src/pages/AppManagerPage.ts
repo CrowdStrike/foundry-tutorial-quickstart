@@ -14,9 +14,26 @@ export class AppManagerPage {
     
     await expect(this.page).toHaveTitle('App catalog | Foundry | Falcon');
     
-    // After arriving at app catalog, navigate to the specific app details
+    // After arriving at app catalog, the app might take time to appear in the catalog
+    // Wait for the page to fully load first
+    await this.page.waitForLoadState('networkidle');
+    
+    // Try multiple approaches to find the app link
     const appLink = this.page.getByRole('link', { name: appName });
-    await appLink.waitFor({ state: 'visible', timeout: 10000 });
+    
+    try {
+      // First attempt: wait for the app link to be visible
+      await appLink.waitFor({ state: 'visible', timeout: 15000 });
+    } catch (error) {
+      // If app link not found, try refreshing the page as the app might still be deploying
+      console.log(`App ${appName} not immediately visible, refreshing page...`);
+      await this.page.reload();
+      await this.page.waitForLoadState('networkidle');
+      
+      // Try again after refresh
+      await appLink.waitFor({ state: 'visible', timeout: 15000 });
+    }
+    
     await appLink.click();
     
     // Wait for the app details page to load
