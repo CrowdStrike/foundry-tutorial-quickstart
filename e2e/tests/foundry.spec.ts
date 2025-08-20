@@ -86,15 +86,8 @@ test.describe('Foundry Tutorial Quickstart E2E Tests', () => {
         description: 'Tests core app installation workflow'
       });
       
-      // Go directly to the app catalog and navigate to the app
       await appCatalogPage.goto();
-      
-      // Navigate to the app details page (with retry logic built-in)
       await appCatalogPage.navigateToAppDetails(appName);
-      
-      // In CI, the app is pre-installed by Foundry CLI deployment
-      // In local tests, we need to install it via UI
-      // The installApp method already handles both cases
       await appCatalogPage.installApp();
       
       logger.success('App installation process completed successfully');
@@ -106,17 +99,12 @@ test.describe('Foundry Tutorial Quickstart E2E Tests', () => {
         description: 'Verifies app installation was successful'
       });
       
-      // Navigate back to catalog to verify installation status
-      // This works for both CI (pre-installed) and local (UI-installed) scenarios
       await appCatalogPage.goto();
-      
-      // Since CI pre-installs the app, we should expect it to be installed
       const isInstalled = await appCatalogPage.isAppInstalled(appName);
       
       if (isInstalled) {
         logger.success('App installation verified - app is properly installed');
       } else {
-        // This might happen due to timing issues, but installation process succeeded
         logger.info('Installation process completed, but catalog status check had timing issues');
         logger.success('Core installation functionality verified');
       }

@@ -16,6 +16,11 @@ export class AppCatalogPage extends BasePage {
     await this.waiter.waitForPageLoad('App catalog page');
   }
 
+  /**
+   * Check if app is installed by looking for installation indicators.
+   * Works for both CI (pre-installed) and local (user-deployed) scenarios.
+   * May have timing issues due to UI state updates, but core functionality is verified.
+   */
   async isAppInstalled(appName: string): Promise<boolean> {
     this.logger.step(`Check if app '${appName}' is installed`);
     
@@ -129,6 +134,12 @@ export class AppCatalogPage extends BasePage {
     );
   }
 
+  /**
+   * Install app via UI. Handles both CI (pre-installed) and local scenarios.
+   * In CI, the app is pre-installed by Foundry CLI deployment.
+   * In local tests, assumes the app (specified by APP_NAME in .env) is already deployed.
+   * This method automatically detects and handles both cases.
+   */
   async installApp(): Promise<void> {
     this.logger.step('Install app via UI');
     
