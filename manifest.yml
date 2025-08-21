@@ -10,6 +10,8 @@ ignored:
     - .+/node_modules/.+
     - .+/venv$
     - .+/venv/.+
+    - e2e
+    - e2e/.+
 ui:
     homepage: ""
     extensions:
@@ -46,4 +48,4 @@ parsers: []
 logscale:
     saved_searches: []
 lookup_files: []
-app_docs: []
+docs: {}
