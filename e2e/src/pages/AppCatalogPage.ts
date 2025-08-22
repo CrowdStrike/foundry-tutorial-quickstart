@@ -145,35 +145,27 @@ export class AppCatalogPage extends BasePage {
     
     return RetryHandler.withPlaywrightRetry(
       async () => {
-        // Check if already installed
-        const installedStatus = this.page.locator('text=Installed').first();
-        if (await this.elementExists(installedStatus, 3000)) {
+        // Check if already installed using improved detection
+        const isInstalled = await this.checkInstallationStatus();
+        if (isInstalled) {
           this.logger.info('App is already installed, skipping installation');
           return;
         }
         
-        await this.smartClick(
-          this.page.getByTestId('app-details-page__install-button'),
-          'Install button',
-          { timeout: 15000 }
-        );
+        // Find and click install button using multiple strategies
+        const installButton = await this.findInstallButton();
+        await installButton.click();
         
         await this.waiter.waitForPageLoad();
         
-        await this.smartClick(
-          this.page.getByTestId('submit'),
-          'Submit installation button'
-        );
+        // Find and click submit button using multiple strategies  
+        const submitButton = await this.findSubmitButton();
+        await submitButton.click();
         
         await this.waiter.waitForPageLoad();
         
-        // Wait for installation to complete
-        const statusElement = await this.waiter.waitForVisible(
-          this.page.getByTestId('status-text'),
-          { description: 'Installation status', timeout: 10000 }
-        );
-        
-        await expect(statusElement).toHaveText('Installed', { timeout: 60000 });
+        // Wait for installation to complete with improved verification
+        await this.waitForInstallationComplete();
         
         this.logger.success('App installation completed successfully');
       },
@@ -207,17 +199,95 @@ export class AppCatalogPage extends BasePage {
     );
   }
 
+  /**
+   * Check if app is currently installed using multiple detection strategies
+   */
+  private async checkInstallationStatus(): Promise<boolean> {
+    const strategies = [
+      this.page.getByTestId('status-text').filter({ hasText: /^Installed$/i }),
+      this.page.getByText('Installed', { exact: true }).first(),
+      this.page.locator('.installed, [class*="installed"]')
+    ];
+    
+    for (const strategy of strategies) {
+      if (await this.elementExists(strategy, 2000)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Find install button using multiple reliable strategies
+   */
+  private async findInstallButton() {
+    const timeout = config.isCI ? 15000 : 10000;
+    const strategies = [
+      this.page.getByTestId('app-details-page__install-button'),
+      this.page.getByRole('link', { name: 'Install now' }),
+      this.page.getByRole('button', { name: 'Install now' })
+    ];
+    
+    for (const strategy of strategies) {
+      if (await this.elementExists(strategy, 3000)) {
+        this.logger.debug('Found install button using strategy');
+        return strategy;
+      }
+    }
+    
+    throw new Error('Install button not found using any detection strategy');
+  }
+
+  /**
+   * Find submit button using multiple reliable strategies
+   */
+  private async findSubmitButton() {
+    const strategies = [
+      this.page.getByTestId('submit'),
+      this.page.getByRole('button', { name: 'Save and install' }),
+      this.page.getByRole('button', { name: /save.*install/i }),
+      this.page.locator('button[type="submit"]')
+    ];
+    
+    for (const strategy of strategies) {
+      if (await this.elementExists(strategy, 5000)) {
+        this.logger.debug('Found submit button using strategy');
+        return strategy;
+      }
+    }
+    
+    throw new Error('Submit button not found using any detection strategy');
+  }
+
+  /**
+   * Wait for installation to complete with improved verification
+   */
+  private async waitForInstallationComplete(): Promise<void> {
+    const timeout = config.isCI ? 60000 : 45000;
+    
+    // Wait for status element to appear
+    const statusElement = await this.waiter.waitForVisible(
+      this.page.getByTestId('status-text'),
+      { description: 'Installation status', timeout: 10000 }
+    );
+    
+    // Wait for "Installed" status with extended timeout
+    await expect(statusElement).toHaveText('Installed', { timeout });
+  }
+
   private buildAppNotFoundError(appName: string): string {
     return [
-      `❌ App "${appName}" is not available in the app catalog.\n`,
-      `This could mean:`,
-      `1. In LOCAL environment: The app needs to be manually deployed first using the Foundry CLI`,
-      `2. In CI environment: The app deployment step may have failed\n`,
-      `To fix this locally:`,
-      `- Run: foundry app deploy`,
-      `- Then run: foundry app release`,
-      `- Make sure your APP_NAME in .env matches your deployed app name\n`,
-      `Current APP_NAME from .env: ${appName}`
+      `❌ TUTORIAL SETUP ISSUE: App "${appName}" not found in catalog.\n`,
+      `📚 For Tutorial Users:`,
+      `1. Make sure you completed the deployment step: 'foundry apps deploy'`,
+      `2. Verify the app was released: 'foundry apps release'`,
+      `3. Check your .env file APP_NAME matches the deployed app\n`,
+      `🔧 Current Configuration:`,
+      `- APP_NAME: ${appName}`,
+      `- Environment: ${config.isCI ? 'CI' : 'Local'}`,
+      `- Base URL: ${config.falconBaseUrl}\n`,
+      `💡 Need help? Check the tutorial README for deployment steps.`,
+      `📖 Tutorial docs: https://github.com/CrowdStrike/foundry-tutorial-quickstart#readme`
     ].join('\n');
   }
 }
