@@ -209,17 +209,15 @@ export class AppCatalogPage extends BasePage {
 
   private buildAppNotFoundError(appName: string): string {
     return [
-      `❌ TUTORIAL SETUP ISSUE: App "${appName}" not found in catalog.\n`,
-      `📚 For Tutorial Users:`,
-      `1. Make sure you completed the deployment step: 'foundry apps deploy'`,
-      `2. Verify the app was released: 'foundry apps release'`,
-      `3. Check your .env file APP_NAME matches the deployed app\n`,
-      `🔧 Current Configuration:`,
-      `- APP_NAME: ${appName}`,
-      `- Environment: ${config.isCI ? 'CI' : 'Local'}`,
-      `- Base URL: ${config.falconBaseUrl}\n`,
-      `💡 Need help? Check the tutorial README for deployment steps.`,
-      `📖 Tutorial docs: https://github.com/CrowdStrike/foundry-tutorial-quickstart#readme`
+      `❌ App "${appName}" is not available in the app catalog.\n`,
+      `This could mean:`,
+      `1. In LOCAL environment: The app needs to be manually deployed first using the Foundry CLI`,
+      `2. In CI environment: The app deployment step may have failed\n`,
+      `To fix this locally:`,
+      `- Run: foundry apps deploy`,
+      `- Then run: foundry apps release`,
+      `- Make sure your APP_NAME in .env matches your deployed app name\n`,
+      `Current APP_NAME from .env: ${appName}`
     ].join('\n');
   }
 }
