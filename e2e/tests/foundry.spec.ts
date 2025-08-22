@@ -25,7 +25,7 @@ test.describe('Foundry Tutorial Quickstart E2E Tests', () => {
   });
 
   // Clean up after each test
-  test.afterEach(async ({ page }, testInfo) => {
+  test.afterEach(async ({ page, appCatalogPage }, testInfo) => {
     // Take screenshot on failure for debugging
     if (testInfo.status !== testInfo.expectedStatus) {
       const screenshotPath = `test-failure-${testInfo.title.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.png`;
@@ -41,15 +41,8 @@ test.describe('Foundry Tutorial Quickstart E2E Tests', () => {
       logger.success(`Test passed: ${testInfo.title}`, { duration: testInfo.duration });
     }
     
-    // Clear any lingering modals or dialogs
-    try {
-      const modalCloseButton = page.getByRole('button', { name: /close|dismiss|cancel/i });
-      if (await modalCloseButton.isVisible({ timeout: 1000 })) {
-        await modalCloseButton.click({ timeout: 2000 });
-      }
-    } catch {
-      // Ignore if no modals to close
-    }
+    // Enhanced modal cleanup
+    await appCatalogPage.cleanupModals();
   });
   
   test.describe('App Installation and Basic Navigation', () => {

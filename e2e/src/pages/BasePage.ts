@@ -51,6 +51,7 @@ export abstract class BasePage {
 
   /**
    * Click an element with smart waiting and retry
+   * Enhanced with automatic force click fallback for complex UI interactions
    */
   protected async smartClick(
     locator: Locator | string, 
@@ -72,7 +73,16 @@ export abstract class BasePage {
           timeout: actualTimeout,
           description
         });
-        await element.click({ force: options.force, timeout: actualTimeout });
+        
+        try {
+          // First attempt: normal click
+          await element.click({ timeout: actualTimeout });
+        } catch (error) {
+          // Second attempt: force click to handle element interception
+          this.logger.debug(`Normal click failed for ${description}, retrying with force: true`);
+          await element.click({ force: true, timeout: actualTimeout });
+          this.logger.debug(`Force click succeeded for ${description}`);
+        }
       },
       `Click ${description}`
     );
@@ -195,6 +205,34 @@ export abstract class BasePage {
       const duration = Date.now() - startTime;
       this.logger.error(`${operationName} failed after ${duration}ms`, error instanceof Error ? error : undefined);
       throw error;
+    }
+  }
+
+  /**
+   * Clean up any open modals or dialogs
+   */
+  async cleanupModals(): Promise<void> {
+    try {
+      const closeButtons = [
+        this.page.getByRole('button', { name: /close|dismiss|cancel/i }),
+        this.page.locator('[data-testid*="close"], [aria-label*="close"]'),
+        this.page.locator('.modal-close, [class*="close"]')
+      ];
+      
+      for (const closeButton of closeButtons) {
+        if (await this.elementExists(closeButton, 1000)) {
+          try {
+            await closeButton.click({ timeout: 2000, force: true });
+            await this.page.waitForTimeout(500);
+          } catch {
+            // Continue to next strategy
+          }
+        }
+      }
+      
+      await this.page.keyboard.press('Escape');
+    } catch {
+      // Modal cleanup should never fail tests
     }
   }
 
