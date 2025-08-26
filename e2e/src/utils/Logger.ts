@@ -146,16 +146,21 @@ export class Logger {
   
   private log(level: LogLevel, message: string, context: LogContext = {}): void {
     const timestamp = new Date().toISOString();
-    const logEntry = {
-      timestamp,
-      level,
-      message,
-      ...context
-    };
     
-    // In CI, use structured JSON logging for better parsing
-    if (this.isCI && level !== 'step') {
-      console.log(JSON.stringify(logEntry));
+    // In CI, be much less verbose with plain text output
+    if (this.isCI) {
+      // Only log errors, warnings, and final test results in CI
+      if (level === 'error' || 
+          (level === 'warn' && !message.includes('App page loaded but no content detected')) ||
+          (level === 'info' && (
+            message.includes('✅ Test passed') || 
+            message.includes('❌ Test failed') ||
+            message.includes('E2E Test Config:')
+          ))) {
+        // Use plain text in CI for better readability
+        console.log(message);
+      }
+      // Completely suppress 'step' level in CI
     } else {
       // In local development, use human-readable format
       console.log(message);

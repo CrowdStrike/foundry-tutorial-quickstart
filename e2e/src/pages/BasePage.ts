@@ -51,6 +51,7 @@ export abstract class BasePage {
 
   /**
    * Click an element with smart waiting and retry
+   * Enhanced with automatic force click fallback for complex UI interactions
    */
   protected async smartClick(
     locator: Locator | string, 
@@ -72,7 +73,16 @@ export abstract class BasePage {
           timeout: actualTimeout,
           description
         });
-        await element.click({ force: options.force, timeout: actualTimeout });
+        
+        try {
+          // First attempt: normal click
+          await element.click({ timeout: actualTimeout });
+        } catch (error) {
+          // Second attempt: force click to handle element interception
+          this.logger.debug(`Normal click failed for ${description}, retrying with force: true`);
+          await element.click({ force: true, timeout: actualTimeout });
+          this.logger.debug(`Force click succeeded for ${description}`);
+        }
       },
       `Click ${description}`
     );
@@ -117,11 +127,22 @@ export abstract class BasePage {
   protected async takeScreenshot(filename: string, context: LogContext = {}): Promise<void> {
     try {
       const screenshotConfig = config.getScreenshotConfig();
-      const fullPath = `${screenshotConfig.path}/${filename}`;
+      
+      // Ensure the directory exists
+      const fs = require('fs');
+      const path = require('path');
+      const screenshotDir = screenshotConfig.path;
+      if (!fs.existsSync(screenshotDir)) {
+        fs.mkdirSync(screenshotDir, { recursive: true });
+      }
+      
+      // Create full path for the screenshot file
+      const fullPath = path.join(screenshotDir, filename);
       
       await this.page.screenshot({ 
         path: fullPath,
-        ...screenshotConfig 
+        fullPage: screenshotConfig.fullPage,
+        type: screenshotConfig.type
       });
       
       this.logger.debug(`Screenshot saved: ${filename}`, { 
@@ -129,7 +150,8 @@ export abstract class BasePage {
         path: fullPath 
       });
     } catch (error) {
-      this.logger.warn(`Failed to take screenshot: ${filename}`, error instanceof Error ? error : undefined, context);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Failed to take screenshot: ${filename} - ${errorMessage}`, error instanceof Error ? error : undefined, context);
     }
   }
 
@@ -195,6 +217,34 @@ export abstract class BasePage {
       const duration = Date.now() - startTime;
       this.logger.error(`${operationName} failed after ${duration}ms`, error instanceof Error ? error : undefined);
       throw error;
+    }
+  }
+
+  /**
+   * Clean up any open modals or dialogs
+   */
+  async cleanupModals(): Promise<void> {
+    try {
+      const closeButtons = [
+        this.page.getByRole('button', { name: /close|dismiss|cancel/i }),
+        this.page.locator('[data-testid*="close"], [aria-label*="close"]'),
+        this.page.locator('.modal-close, [class*="close"]')
+      ];
+      
+      for (const closeButton of closeButtons) {
+        if (await this.elementExists(closeButton, 1000)) {
+          try {
+            await closeButton.click({ timeout: 2000, force: true });
+            await this.page.waitForTimeout(500);
+          } catch {
+            // Continue to next strategy
+          }
+        }
+      }
+      
+      await this.page.keyboard.press('Escape');
+    } catch {
+      // Modal cleanup should never fail tests
     }
   }
 

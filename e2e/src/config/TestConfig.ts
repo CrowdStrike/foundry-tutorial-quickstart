@@ -107,8 +107,8 @@ export class TestConfig {
     return {
       path: this.screenshotPath,
       fullPage: true,
-      type: 'png' as const,
-      quality: this.isCI ? 80 : 100
+      type: 'png' as const
+      // Note: quality parameter is not supported for PNG screenshots
     };
   }
   
