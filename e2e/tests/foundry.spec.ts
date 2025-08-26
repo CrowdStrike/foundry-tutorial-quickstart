@@ -13,7 +13,6 @@ test.describe('Foundry Tutorial Quickstart E2E Tests', () => {
   
   // Global setup for the entire test suite
   test.beforeAll(async () => {
-    config.logSummary();
     logger.info('Starting Foundry Tutorial Quickstart E2E test suite');
     
     // Log test environment info
