@@ -97,7 +97,7 @@ jobs:
           directory: e2e
 
       - name: Run Playwright tests
-        run: npx dotenvx run -- npx playwright test
+        run: npx dotenvx run --quiet -- npx playwright test
         working-directory: e2e
 
       - name: Upload Playwright report
@@ -106,6 +106,14 @@ jobs:
         with:
           name: playwright-report-${{ env.APP_NAME }}
           path: e2e/playwright-report/
+          retention-days: 30
+
+      - name: Upload test results and screenshots
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-test-results-${{ env.APP_NAME }}
+          path: e2e/test-results/
           retention-days: 30
 
       - name: Delete app from Falcon
