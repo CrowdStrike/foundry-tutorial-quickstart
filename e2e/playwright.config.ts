@@ -19,6 +19,8 @@ export default defineConfig({
   use: {
     testIdAttribute: 'data-test-selector',
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
     actionTimeout: process.env.CI ? 15 * 1000 : 12 * 1000, // Optimized timeouts
     navigationTimeout: process.env.CI ? 30 * 1000 : 25 * 1000, // for navigation
   },
