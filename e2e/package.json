@@ -14,11 +14,11 @@
     "node": ">=22.0.0"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.47.3",
-    "otpauth": "^9.4.0"
+    "@dotenvx/dotenvx": "1.47.3",
+    "otpauth": "9.4.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.53.2",
-    "@types/node": "^24.0.10"
+    "@playwright/test": "1.53.2",
+    "@types/node": "24.0.10"
   }
 }
