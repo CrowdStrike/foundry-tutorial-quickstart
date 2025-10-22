@@ -7,22 +7,34 @@ on:
   pull_request:
     branches: [ main ]
 
+# Serialize E2E tests to prevent deployment and UI collisions
+concurrency:
+  group: e2e-tests-${{ github.repository }}
+  cancel-in-progress: false  # Let running tests finish before starting new ones
+
 permissions:
   contents: read
 
 jobs:
   e2e:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.actor != 'dependabot[bot]'
     env:
       FOUNDRY_API_CLIENT_ID: ${{ secrets.FOUNDRY_API_CLIENT_ID }}
       FOUNDRY_API_CLIENT_SECRET: ${{ secrets.FOUNDRY_API_CLIENT_SECRET }}
       FOUNDRY_CID: ${{ secrets.FOUNDRY_CID }}
       FOUNDRY_CLOUD_REGION: ${{ secrets.FOUNDRY_CLOUD_REGION }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden Runner
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v5
 
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+        uses: Homebrew/actions/setup-homebrew@1ccc07ccd8b9519f44d3e5eaa1b41dd90310adf0  # master
 
       - name: Install required tools
         run: |
@@ -36,14 +48,27 @@ jobs:
         run: |
           # Remove IDs from manifest
           yq -i 'del(.. | select(has("id")).id) | del(.. | select(has("app_id")).app_id)' manifest.yml
-          
-          # Generate unique app name
-          yq -i '.name = .name + "-${{ github.actor }}-" + "'$(date +"%Y%m%d%H%M")'"' manifest.yml
-          
+
+          # Generate unique app name with length safety
+          REPO_NAME="${{ github.event.repository.name }}"
+          ACTOR="${{ github.actor }}"
+          SHORT_ACTOR="${ACTOR/dependabot\[bot\]/deps}"
+          UNIQUE_NAME="${REPO_NAME}-${SHORT_ACTOR}-$(date +"%m%d%H%M")"
+
+          # Truncate if too long by removing foundry- prefix
+          if [ ${#UNIQUE_NAME} -gt 50 ]; then
+            REPO_BASE="${REPO_NAME#foundry-}"
+            UNIQUE_NAME="${REPO_BASE}-${SHORT_ACTOR}-$(date +"%m%d%H%M")"
+          fi
+
+          # Export for yq and set the manifest name
+          export UNIQUE_NAME
+          yq -i '.name = env(UNIQUE_NAME)' manifest.yml
+
           # Set app name as environment variable
           APP_NAME=$(yq '.name' manifest.yml)
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
-          
+
           echo "Prepared manifest with app name: $APP_NAME"
 
       - name: Deploy app to Falcon
@@ -56,31 +81,45 @@ jobs:
           echo "Waiting for deployment to complete..."
           timeout=300  # 5 minute timeout
           elapsed=0
-          
+
           while [ $elapsed -lt $timeout ]; do
             if foundry apps list-deployments | grep -i "successful"; then
               echo "Deployment successful, releasing app..."
               foundry apps release --change-type=major --notes="e2e release"
               echo "App released successfully"
+
+              # Brief wait for release to complete - E2E tests handle app discovery with retries
+              echo "Allowing brief time for release to complete..."
+              sleep 15
+
+              # Verify deployment status and get app details
+              echo "Verifying final deployment status..."
+              foundry apps list-deployments
+
+              echo "Final deployed app name: $APP_NAME"
+
               exit 0
             fi
-          
+
             if foundry apps list-deployments | grep -i "failed"; then
               echo "Deployment failed"
               exit 1
             fi
-          
+
             sleep 5
             elapsed=$((elapsed + 5))
           done
-          
+
           echo "Deployment timeout after ${timeout} seconds"
           exit 1
 
+      # Parallelize Node setup while deployment happens
       - name: Install Node LTS
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v6
         with:
-          node-version: lts/*
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: e2e/package-lock.json
 
       - name: Install Playwright dependencies
         run: npm ci
@@ -91,7 +130,7 @@ jobs:
         working-directory: e2e
 
       - name: Make envfile
-        uses: SpicyPizza/create-envfile@v2
+        uses: SpicyPizza/create-envfile@6da099c0b655bd3abd8273c4e2fe7c59e63fa88a  # v2
         with:
           envkey_FALCON_USERNAME: ${{ secrets.FALCON_USERNAME }}
           envkey_FALCON_PASSWORD: ${{ secrets.FALCON_PASSWORD }}
@@ -102,26 +141,27 @@ jobs:
       - name: Run Playwright tests
         run: npx dotenvx run --quiet -- npx playwright test
         working-directory: e2e
+        env:
+          CI: true
 
       - name: Upload Playwright report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b  # v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-report-${{ env.APP_NAME }}
           path: e2e/playwright-report/
-          retention-days: 30
+          retention-days: 7
 
       - name: Upload test results and screenshots
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b  # v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-test-results-${{ env.APP_NAME }}
           path: e2e/test-results/
-          retention-days: 30
+          retention-days: 7
 
       - name: Delete app from Falcon
         if: always()
         run: |
           echo "Deleting app: $APP_NAME"
-          foundry apps delete -f
-          echo "App deleted successfully"
+          foundry apps delete -f || echo "App deletion failed, may already be deleted"
