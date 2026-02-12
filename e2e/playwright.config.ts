@@ -10,7 +10,6 @@ export default defineConfig({
   fullyParallel: false, // for more controlled test execution
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1, // Allow 1 retry locally for better reliability
-  workers: process.env.CI ? 1 : 4,
   timeout: process.env.CI ? 60 * 1000 : 45 * 1000, // Enhanced timeout hierarchy
   expect: {
     timeout: process.env.CI ? 10 * 1000 : 8 * 1000, // for assertions
