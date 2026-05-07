@@ -1,14 +1,18 @@
+import { expect } from '@playwright/test';
 import { test } from '../src/fixtures';
 
-test.describe.configure({ mode: 'serial' });
+test('should find extension in detection details', async ({ detectionExtensionPage, page }) => {
+  await detectionExtensionPage.navigateToEndpointDetections();
+  await detectionExtensionPage.openFirstDetection();
 
-test.describe('Foundry Tutorial Quickstart - E2E Tests', () => {
-  test('should navigate to Endpoint detections page', async ({ detectionExtensionPage }) => {
-    await detectionExtensionPage.navigateToEndpointDetections();
-  });
+  const extensionButton = page.getByRole('button', { name: /My First Extension/i }).first();
 
-  test('should navigate to detection details and find extension', async ({ detectionExtensionPage }) => {
-    await detectionExtensionPage.navigateToDetectionDetails();
-    await detectionExtensionPage.verifyExtensionExists('My First Extension');
-  });
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const visible = await extensionButton.isVisible().catch(() => false);
+    if (visible) break;
+    await page.keyboard.press('End');
+    await page.waitForLoadState('domcontentloaded');
+  }
+
+  await expect(extensionButton).toBeVisible({ timeout: 10000 });
 });
