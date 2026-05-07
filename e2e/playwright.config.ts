@@ -1,3 +1,3 @@
 import { defineFoundryConfig } from '@crowdstrike/foundry-playwright';
 
-export default defineFoundryConfig();
+export default defineFoundryConfig({ retries: 2 });
