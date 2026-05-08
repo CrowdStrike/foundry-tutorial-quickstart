@@ -42,11 +42,11 @@ foundry version
 
 ## Getting Started
 
-Clone this repository to your local system, or [download it as a zip file](https://github.com/CrowdStrike/foundry-quickstart/archive/refs/heads/main.zip).
+Clone this repository to your local system, or [download it as a zip file](https://github.com/CrowdStrike/foundry-tutorial-quickstart/archive/refs/heads/main.zip).
 
 ```shell
-git clone https://github.com/CrowdStrike/foundry-quickstart
-cd foundry-quickstart
+git clone https://github.com/CrowdStrike/foundry-tutorial-quickstart
+cd foundry-tutorial-quickstart
 ```
 
 Log in to Foundry:
@@ -92,11 +92,11 @@ This example uses the following CrowdStrike products:
 
 ## Help
 
-Please post any questions as [discussions](https://github.com/CrowdStrike/foundry-quickstart/discussions) in this repo, ask for help in our [CrowdStrike subreddit](https://www.reddit.com/r/crowdstrike/), or post your question to our [Foundry Developer Community](https://community.crowdstrike.com/groups/foundry-developer-community-82).
+Please post any questions as [discussions](https://github.com/CrowdStrike/foundry-tutorial-quickstart/discussions) in this repo, ask for help in our [CrowdStrike subreddit](https://www.reddit.com/r/crowdstrike/), or post your question to our [Foundry Developer Community](https://community.crowdstrike.com/groups/foundry-developer-community-82).
 
 ## Support
 
-The foundry-quickstart repo is the resulting code from doing the Foundry Quickstart tutorial. While not a formal CrowdStrike product, foundry-quickstart is maintained by CrowdStrike and supported in partnership with the open source developer community.
+The foundry-tutorial-quickstart repo is the resulting code from doing the Foundry Quickstart tutorial. While not a formal CrowdStrike product, foundry-tutorial-quickstart is maintained by CrowdStrike and supported in partnership with the open source developer community.
 
 ## License
 

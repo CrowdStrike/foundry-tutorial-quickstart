@@ -5,7 +5,8 @@
   "scripts": {
     "test": "npx playwright test",
     "test:ui": "npx playwright test --ui",
-    "test:debug": "npx playwright test --debug"
+    "test:debug": "npx playwright test --debug",
+    "test:verbose": "DEBUG=true npx playwright test --reporter=list"
   },
   "keywords": [],
   "license": "MIT",
@@ -13,12 +14,8 @@
   "engines": {
     "node": ">=22.0.0"
   },
-  "dependencies": {
-    "@dotenvx/dotenvx": "1.52.0",
-    "otpauth": "9.5.0"
-  },
   "devDependencies": {
-    "@playwright/test": "1.57.0",
-    "@types/node": "25.1.0"
+    "@crowdstrike/foundry-playwright": "0.5.0",
+    "@types/node": "25.6.0"
   }
 }
