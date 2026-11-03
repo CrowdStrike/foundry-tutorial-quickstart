@@ -9,7 +9,7 @@
 > [!IMPORTANT]  
 > To view this tutorial and import the app, you need access to the Falcon console.
 
-This code is the result of doing the Falcon Foundry Quickstart. To see how it was created, please [visit our documentation](https://falcon.crowdstrike.com/login/?unilogin=true&next=/documentation/page/p3e6b484/foundry-quickstart).
+This code is the result of following [A Practical Guide to Building a Falcon Foundry App for the First Time](https://www.crowdstrike.com/tech-hub/ng-siem/a-practical-guide-to-building-a-falcon-foundry-app-for-the-first-time/).
 
 ## Prerequisites
 
