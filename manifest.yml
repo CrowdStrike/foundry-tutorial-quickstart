@@ -22,7 +22,8 @@ ui:
           sockets:
             - activity.detections.details
           content_security_policy:
-            connect-src: []
+            connect-src:
+                - assets.foundry.crowdstrike.com
             style-src: []
             style-src-elem: []
             script-src: []
